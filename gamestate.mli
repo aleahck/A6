@@ -1,6 +1,7 @@
-(*open Deck
+open Deck
 open Card
-open Logic*)
+open Logic
 
-(*x is an int*)
-type x = int
+(*GAMESTATE MLI*)
+
+(**)
