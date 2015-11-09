@@ -8,7 +8,8 @@ open Logic
 type player ={
     stake: int;
     cards: card * card;
-    best: hand (*whats this being called from logic?*)
+    best: hand; (*whats this being called from logic?*)
+    amount_in: int
   }
 
 
@@ -17,16 +18,31 @@ type game= {
     flop: card list;
     bet: int;
     pot: int;
-    players: player list
-    deck: deck
+    players_hand: player list
+    deck: deck;
+    first_better: player;
+    players_game: player list
   }
     
 
-(*Updates the game record*)
-val update_game= string-> game-> game
+(*Takes in an int to raise the current bet by and the current game state. Updates the bet to match raised value*)
+val raise_by= int-> game-> game
 
-(*Updates a player*)
-val update_player= string-> player-> player
+(*Takes in a game. Removes the value of the current bet from the current player's stake and moves to the next player*)
+val call= game-> game
+
+(*Takes in a game. Moves to next player*)
+val check= game->game
+
+(*Takes in a game and ignores player that folds for rest of hand*)
+val fold= game->game
+
+(*Deals cards to flop and starts new hand at the end of the hand. Returns Some of the updated game state.
+*If the game is over, returns None*)
+val dealer= game->option game
+
+(*Creates a new game*)
+val new_game= unit-> game
 
 (*Formats a game to a string for printing*)
 val game_to_string= game-> string
