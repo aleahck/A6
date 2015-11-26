@@ -32,5 +32,63 @@ let do_raise (g:game) (i:int)=
    bet= g.bet+i;
    pot= g.pot+ (g.bet+i);
    players= new_players;
-   deck= g.deck
+   deck= g.deck;
+   first_better= g.first_better
   }
+
+let current_player (g:game) = List.hd g.players
+
+let is_valid_bet (i:int) (g:game) =
+  if i > (current_player g).stake then false
+  else if i < g.bet then false
+  else if (* implement blind rules *)
+  else return true
+
+let call (g:game) =
+  do_raise g (g.bet)
+
+let check (g:game) =
+  { g with players = (List.tl g.players)@[current_player g] }
+
+let new_hand (g:game) =
+{ flop = [];
+  bet = 0;
+  pot = 0;
+  players = (current_player g)@[new_player];
+  deck = Deck.rand_deck();
+  first_better = (List.tl g.first_better)@(List.hd g.first_better) }
+
+(* Only works for 2 players; only ends the hand instead of continuing hand
+  without player who folded. *)
+let fold (g:game) =
+  let next = List.nth g.players 1 in
+  let new_player = {next with stake = g.pot} in
+  new_hand g
+
+(* Only works for 2 players. For multiple players, must be able to take player
+  out of queue and continue game *)
+let dealer (g:game) =
+  let big_blind = List.hd g.first_better in
+  let small_blind = List.nth g.first_better 1 in
+  if !(List.for_all
+    (fun x -> if x = big_blind then x.stake > 2
+      else if x = small_blind then x.stake > 1
+      else x.stake > 0)
+    (g.players)) then None else
+  Some (new_hand g)
+
+(* Helper function for new_game. *)
+let new_player (cards: card*card) =
+  {stake = 0;
+  cards = ()
+  amount_in = 0
+  }
+
+let new_game () =
+  let helper =
+  { flop = [];
+  bet = 0;
+  pot = 0;
+  players = (new_player())@[new_player()]
+  deck = Deck.rand_deck();
+  first_better = (List.tl g.first_better)@(List.hd g.first_better) } in

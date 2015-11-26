@@ -44,7 +44,7 @@ val is_valid_bet : int -> game -> bool
 (*Takes in an int to raise the current bet by and the current game state.
 *Updates the bet to match raised value. The int will always be valid as this
 *must be called after is_valid_bet for human inputs*)
-val raise_by : int-> game-> game
+val do_raise : game-> int-> game
 
 (*Takes in a game. Removes the value of the current bet from the current
 *player's stake and moves to the next player*)
