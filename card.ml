@@ -1,7 +1,8 @@
+#load "str.cma"
 type suit = Hearts | Diamonds | Clubs | Spades
 
-type value = Two | Three | Four | Five | Six | Seven | Eight
-             | Nine | Ten | Jack | Queen | King | Ace
+type value = Ace | King | Queen | Jack | Ten | Nine | Eight
+                 | Seven | Six | Five | Four | Three | Two
 
 type card = value * suit
 
@@ -36,7 +37,7 @@ let value_of_string s =
   | "A"  | "Ace"   -> Some Ace
   | _              -> None
 
-let card_of_string s = 
+let card_of_string s =
   let slist = Str.split (Str.regexp "[ \t]+") (String.capitalize s) in
   let card_string s1 s2 =
     match (value_of_string s1),(suit_of_string s2) with

@@ -1,19 +1,17 @@
 (*open necessary files*)
 
 (*types*)
-type fiveTuple = card * card * card * card * card
-
 type hand =
-HighCard of fiveTuple |
-Pair of fiveTuple |
-TwoPair of fiveTuple |
-Triple of fiveTuple | (*three of a kind*)
-Straight of fiveTuple |
-Flush of fiveTuple |
-FullHouse of fiveTuple |
-Quads of fiveTuple | (*four of a kind*)
-StraightFlush of fiveTuple |
-RoyalFlush of fiveTuple
+HighCard of card list
+| Pair of card list
+| TwoPair of card list
+| Triple of card list  (*three of a kind*)
+| Straight of card list
+| Flush of card list
+| FullHouse of card list
+| Quads of card list  (*four of a kind*)
+| StraightFlush of card list
+| RoyalFlush of card list
 
 (*functions*)
 

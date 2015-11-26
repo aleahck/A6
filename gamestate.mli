@@ -34,27 +34,27 @@ type game= {
     (*players_game: player list
     *players_hand: player list*)
   }
-    
-(* Takes in an int and a game. If the int is a valid bet, it returns true. If 
-*the int is greater than the current players stake, violates rules on blinds, 
+
+(* Takes in an int and a game. If the int is a valid bet, it returns true. If
+*the int is greater than the current players stake, violates rules on blinds,
 *or is not sufficient to at least meat the bet for the current hand, it returns
 *false*)
 val is_valid_bet : int -> game -> bool
 
-(*Takes in an int to raise the current bet by and the current game state. 
-*Updates the bet to match raised value. The int will always be valid as this 
+(*Takes in an int to raise the current bet by and the current game state.
+*Updates the bet to match raised value. The int will always be valid as this
 *must be called after is_valid_bet for human inputs*)
 val raise_by : int-> game-> game
 
-(*Takes in a game. Removes the value of the current bet from the current 
+(*Takes in a game. Removes the value of the current bet from the current
 *player's stake and moves to the next player*)
 val call : game-> game
 
-(*Takes in a game. Moves to next player but does not change gamestate 
+(*Takes in a game. Moves to next player but does not change gamestate
 *otherwise*)
 val check : game->game
 
-(*Takes in a game and ignores player that folds for rest of hand. When 
+(*Takes in a game and ignores player that folds for rest of hand. When
 *implemented for only two players, this ends the hand*)
 val fold : game->game
 
