@@ -19,15 +19,19 @@ let second_word command=
 			    ((String.length lower_trimmed)-space)in
   String.trim untrimmed
 
+let choose_action (g:game) (c:command)=
+  let first= first_word command in
+  if (first= "check") then check g else (
+  if (first= "call") then call g else(
+  if (first= "fold") then fold g else (
+  let second= second_word command in
+  let i= string_of_int second in
+  raise_by i g
+  )))
+
 let playGame (input:Sys.argv) (g: game)= 
   let command= read_line() in
-  let new_game= failwith "TODO" in 
-  let first= first_word command in
-  if (first= "") then failwith "TODO" else (
-  if (first= "") then failwith "TODO" else(
-  if (first= "") then failwith "TODO" else (
-  let second= second_word command in
-  failwith "TODO"
-  )))
+  let new_game= choose_action g command in 
+
   
   
