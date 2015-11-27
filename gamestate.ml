@@ -2,11 +2,13 @@ open Deck
 open Card
 open GameLogic
 
-type player= {
+type player = {
     stake: int;
-    cards: card * card;
+    mutable cards: card list option;
     amount_in: int
   }
+
+type id = int
 
 type game= {
     flop: card list;
@@ -14,7 +16,7 @@ type game= {
     pot: int;
     players: player list;
     deck: deck;
-    first_better: player
+    first_better: player ref list
   }
 
 (*[do_player_bet p i] removes [i] from [p]'s stake and adds it to [p]'s
@@ -50,23 +52,27 @@ let call (g:game) =
 let check (g:game) =
   { g with players = (List.tl g.players)@[current_player g] }
 
+
+(* Helper for fold and dealer. Creates new hand. *)
 let new_hand (g:game) =
-{ flop = [];
+  let next = List.nth g.players 1 in
+  let new_player = {next with stake = g.pot} in
+  { flop = [];
   bet = 0;
   pot = 0;
   players = (current_player g)@[new_player];
   deck = Deck.rand_deck();
   first_better = (List.tl g.first_better)@(List.hd g.first_better) }
 
+
 (* Only works for 2 players; only ends the hand instead of continuing hand
   without player who folded. *)
 let fold (g:game) =
-  let next = List.nth g.players 1 in
-  let new_player = {next with stake = g.pot} in
   new_hand g
 
+
 (* Only works for 2 players. For multiple players, must be able to take player
-  out of queue and continue game *)
+  out of queue and continue game. Also need to work on blinds values. *)
 let dealer (g:game) =
   let big_blind = List.hd g.first_better in
   let small_blind = List.nth g.first_better 1 in
@@ -77,12 +83,19 @@ let dealer (g:game) =
     (g.players)) then None else
   Some (new_hand g)
 
+
 (* Helper function for new_game. *)
-let new_player (cards: card*card) =
-  {stake = 0;
-  cards = ()
-  amount_in = 0
-  }
+let new_player () =
+  {stake = 200; (* arbitrary *)
+  cards = None
+  amount_in = 0}
+
+
+(* Only works if Deck.top2_cards returns (card list * deck) *)
+let deal_two (p:player) (d:deck) =
+  p.cards <- Some (fst (Deck.top2_cards d)) ;
+  snd (Deck.top2_cards d)
+
 
 let new_game () =
   let helper =
@@ -92,3 +105,11 @@ let new_game () =
   players = (new_player())@[new_player()]
   deck = Deck.rand_deck();
   first_better = (List.tl g.first_better)@(List.hd g.first_better) } in
+
+  let d1 = deal_two (List.hd helper.players) (helper.deck) in
+  let d2 = deal_two (List.nth helper.players 1) (d1) in
+  {helper with deck = d2}
+
+
+
+
