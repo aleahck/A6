@@ -1,4 +1,5 @@
 (*open necessary files*)
+open Card
 
 (*types*)
 type hand =

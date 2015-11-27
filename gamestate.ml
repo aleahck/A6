@@ -1,6 +1,6 @@
 open Deck
 open Card
-open GameLogic
+open Gamelogic
 
 type player= {
     stake: int;

@@ -1,4 +1,4 @@
-#load "str.cma"
+
 type suit = Hearts | Diamonds | Clubs | Spades
 
 type value = Ace | King | Queen | Jack | Ten | Nine | Eight
