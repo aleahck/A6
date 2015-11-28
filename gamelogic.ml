@@ -60,7 +60,8 @@ let determine_best_hand (c:card list) : hand = failwith "TODO"
 * i.e. HighCard -> 0, Pair -> 1, etc.*)
 let hand_to_hand_rank (h:hand) : int = failwith "TODO"
 
-(*helpers for compare_hands*)
+(*helpers for compare_hands
+*invariant: all card lists have 5 cards upon initial function call*)
 
 (*HighCard comparison*)
 let rec compare_high_card (h1:card list) (h2:card list) : card list =
@@ -119,6 +120,78 @@ let compare_two_pair (h1:card list) (h2:card list) : card list =
             in loop h1 h2
 
 (* Triple comparison *)
+let rec value_of_triple (h:card list) : value =
+  match h with
+  | [] -> failwith "Hand does not contain a triple"
+  | hd::[] -> failwith "Hand does not contain a triple"
+  | h1::h2::[] -> failwith "Hand does not contain a triple"
+  | h1::h2::h3::t -> if (same_value h1 h2) && (same_value h2 h3)
+                     then val_of_card h1
+                     else value_of_triple (h2::h3::t)
+
+let compare_triple (h1:card list) (h2:card list) : card list =
+  let v1 = value_of_triple (insertion_sort h1) in
+    let v2 = value_of_triple (insertion_sort h2) in
+      if v1 > v2 then h1
+      else if v1 < v2 then h2
+      else let rec loop hnd1 hnd2 =
+        match (insertion_sort hnd1, insertion_sort hnd2) with
+        | ([],[]) -> failwith "same hands" (*both hands are the same?*)
+        | (x::xs,[]) -> h1
+        | ([],x::xs) -> h2
+        | (x1::xs1,x2::xs2) -> if v1 = val_of_card x1 then loop xs1 xs2
+                          else if (val_of_card x1) < (val_of_card x2) then hnd2
+                          else hnd1
+                        in loop h1 h2
+
+(* Straight comparison *)
+
+let rec compare_straight (h1:card list) (h2:card list) : card list =
+  match (insertion_sort h1,insertion_sort h2) with
+  | ([],[]) -> failwith "same hands"
+  (* because a straight with an A will be AKQJT or A5432 *)
+  | (x1::xs1,x2::xs2) -> if val_of_card x1 = val_of_card x2
+                         then compare_straight xs1 xs2
+                         else compare_high_card [x1] [x2]
+  | _ -> failwith "not possible"
+
+(* Flush comparison *)
+
+let rec compare_flush (h1:card list) (h2:card list) : card list =
+  match (insertion_sort h1,insertion_sort h2) with
+  | ([],[]) -> failwith "same hands"
+  | (x1::xs1,x2::xs2) -> if val_of_card x1 = val_of_card x2
+                         then compare_flush xs1 xs2
+                         else compare_high_card [x1] [x2]
+  | _ -> failwith "not possible"
+
+(* Quads comparison *)
+
+let rec compare_quads (h1:card list) (h2:card list) : card list =
+  match (insertion_sort h1,insertion_sort h2) with
+  | ([],[]) -> failwith "same hands"
+  (* because a straight with an A will be AKQJT or A5432 *)
+  | (fst1::snd1::t1,fst2::snd2::t2) ->
+    if val_of_card fst1 = val_of_card snd1 &&
+    val_of_card fst2 = val_of_card snd2
+    then (if val_of_card fst1 = val_of_card fst2 then compare_high_card h1 h2
+    else if val_of_card fst1 > val_of_card fst2 then h1
+    else h2)
+    else compare_quads (snd1::t1) (snd2::t2)
+  | _ -> failwith "not possible"
+
+(* StraightFlush comparison *)
+
+(*same as comparing a regular straight*)
+let rec compare_straight_flush (h1:card list) (h2:card list) : card list =
+  compare_straight h1 h2
+
+(* RoyalFlush comparison *)
+
+(* The only time both players can have a royal flush is when the
+* 5 board cards make a royal flush so this will split the spot *)
+let rec compare_royal_flush (h1:card list) (h2:card list) : card list =
+  failwith "Same hands"
 
 
 (* Function for comapring hands, will call a helper function for
@@ -131,16 +204,16 @@ let compare_hands (h1:hand) (h2:hand) : hand =
   if h1 > h2 then h1
   else if h2 > h1 then h2
   else match h1 with
-       | HighCard (_) -> determine_best_hand (compare_high_card
-        (hand_to_card_list h1) (hand_to_card_list h2))
-       | Pair (_) -> determine_best_hand (compare_pair
-       (hand_to_card_list h1) (hand_to_card_list h2))
-       | TwoPair (_) -> determine_best_hand (compare_two_pair
-       (hand_to_card_list h1) (hand_to_card_list h2))
-       | Triple (_) -> failwith "Implement"
-       | Straight (_) -> failwith "Implement"
-       | Flush (_) -> failwith "Implement"
-       | FullHouse (_) -> failwith "Implement"
-       | Quads (_) -> failwith "Implement"
-       | StraightFlush (_) -> failwith "Implement"
-       | RoyalFlush (_) -> failwith "Implement"
+  | HighCard (_) -> determine_best_hand (compare_high_card
+                    (hand_to_card_list h1) (hand_to_card_list h2))
+  | Pair (_) -> determine_best_hand (compare_pair
+                (hand_to_card_list h1) (hand_to_card_list h2))
+  | TwoPair (_) -> determine_best_hand (compare_two_pair
+                   (hand_to_card_list h1) (hand_to_card_list h2))
+  | Triple (_) -> failwith "Implement"
+  | Straight (_) -> failwith "Implement"
+  | Flush (_) -> failwith "Implement"
+  | FullHouse (_) -> failwith "Implement"
+  | Quads (_) -> failwith "Implement"
+  | StraightFlush (_) -> failwith "Implement"
+  | RoyalFlush (_) -> failwith "Implement"
