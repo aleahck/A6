@@ -14,9 +14,9 @@ type game= {
     flop: card list;
     bet: int;
     pot: int;
-    players: id*player list;
+    players: (id * player) list;
     deck: deck;
-    first_better:id list
+    first_better: id list
   }
 
 let current_player (g:game) = snd (List.hd g.players)
@@ -63,7 +63,7 @@ let new_hand (g:game) =
   let fst_id= fst (List.hd g.players) in
   let snd_player_original = snd (List.nth g.players 1) in
   let snd_id= fst (List.nth g.players 1) in
-  let snd_player= snd_player_original with stake= 
+  let snd_player= snd_player_original with stake=
 					     snd_player_original.stake+g.pot in
   let new_start= List.nth g.first_better 1 in
   if (new_start=fst_id) then
@@ -114,11 +114,11 @@ let deal_two (p:player) (d:deck) =
   p.cards <- Some (fst (Deck.top2_cards d)) ;
   snd (Deck.top2_cards d)
 
-(*[deal_two g] takes in a game and returns a pair containing the deck from 
-*[g] with the first two cards removed and a player, id pair with those two 
+(*[deal_two g] takes in a game and returns a pair containing the deck from
+*[g] with the first two cards removed and a player, id pair with those two
 *cards in the cards field of the player*)
 let deal_two (g:game)
-  let this_player=(current_player g with cards= 
+  let this_player=(current_player g with cards=
 					  Some (fst (Deck.top2_cards g.deck)) in
   let this_pair=(get_current_id g,this_player) in
   (Deck.top2_cards g.deck, this_pair)
@@ -132,8 +132,49 @@ let make_game () =
   pot = 0;
   players = [(1,new_player());(2,new_player())];
   deck = Deck.rand_deck();
-  first_better = [1;2] } 
+  first_better = [1;2] }
 
 
+(* Turns card list into string. Helper function for to_string functions *)
+let rec string_of_clist lst acc =
+  match lst with
+    | h::[] -> let acc2 = (acc ^ (card_to_string h)) in
+      (string_of_clist [] acc2)
+    | h::t -> let acc2 = (acc ^ (card_to_string h) ^ ", ") in
+      (string_of_clist t acc2)
+    | [] -> acc
 
+(* Turns player list into string.
+* Only prints out the player IDs (i.e. "Player 1, Player 2, Player 3")
+* Helper function for to_string functions. *)
+
+(* NOTE!!! Should we change this to print out only players still in game?
+ * Should we print out players at all? *)
+let rec string_of_plist lst acc =
+  match lst with
+    | h::[] -> let acc2 = acc ^ "Player " ^ (string_of_int (fst h)) in
+      (string_of_plist [] acc2)
+    | h::t -> let acc2 = acc ^ "Player " ^ (string_of_int (fst h)) ^ ", " in
+      (string_of_plist t acc2)
+    | [] -> acc
+
+
+let game_to_string (g:game) =
+  "The flop is: " ^ (string_of_clist g.flop "") ^ "\n" ^
+  "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
+  "The pot is: " ^ (string_of_int g.pot) ^ "\n" ^
+  "The players are: " ^ (string_of_plist g.players "")
+  (* NOTE!!! Don't need to print deck. Do we need first better? *)
+
+
+(* Helper function for player_to_string. *)
+(* NOTE!!! Not sure if necessary? Will None ever need to be printed? *)
+let opt_cards (p:player) =
+  if p.cards = None then "None" else string_of_clist p.cards
+
+
+let player_to_string (p:player) =
+  "Your stake is: " ^ (string_of_int p.stake) ^ "\n" ^
+  "Your cards are: " ^ (opt_cards p) ^ "\n" ^
+  "You have bet: " ^ (string_of_int p.amount_n)
 
