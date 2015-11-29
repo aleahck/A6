@@ -19,19 +19,37 @@ let second_word command=
 			    ((String.length lower_trimmed)-space)in
   String.trim untrimmed
 
+(*Takes in a game, performs an action, and returns some of a modified game or 
+*None if the command isn't valid*)
 let choose_action (g:game) (c:command)=
   let first= first_word command in
-  if (first= "check") then check g else (
-  if (first= "call") then call g else(
-  if (first= "fold") then fold g else (
-  let second= second_word command in
-  let i= string_of_int second in
-  raise_by i g
-  )))
+  match first with 
+  |"repeat"-> g
+  |"check"-> if (is_valid_bet 0 g) then Some (check g) else
+	       None
+  |"call"-> if (is_valid_bet g.bet g) then Some (call g) else 
+	      None
+  |"fold"-> Some (fold g)
+  |"raise"->(
+    let second= second_word command in
+    let i= try (let num= int_of_string second in
+	           if (is_valid_bet (g.bet+i)) then Some (raise_by i g) else 
+		     None
+	       ) with
+	   |Failure "int_of_string"-> None)
 
-let playGame (input:Sys.argv) (g: game)= 
+  |_-> None
+
+let play_game  (g: game)= 
   let command= read_line() in
   let new_game= choose_action g command in 
-
-  
+  match new_game with
+    |Some gm-> print_string (string_of_game gm); play_game gm
+    |None-> print_string "Invalid input"; play_game g
+ 
+let _= 
+  let new_game= Gamestate.make_game () in
+  print_string "TODO";
+  failwith "write stuff in the print statement above"
+  play_game new_game
   
