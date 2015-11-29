@@ -114,19 +114,25 @@ let deal_two (p:player) (d:deck) =
   p.cards <- Some (fst (Deck.top2_cards d)) ;
   snd (Deck.top2_cards d)
 
+(*[deal_two g] takes in a game and returns a pair containing the deck from 
+*[g] with the first two cards removed and a player, id pair with those two 
+*cards in the cards field of the player*)
+let deal_two (g:game)
+  let this_player=(current_player g with cards= 
+					  Some (fst (Deck.top2_cards g.deck)) in
+  let this_pair=(get_current_id g,this_player) in
+  (Deck.top2_cards g.deck, this_pair)
+
 
 let new_game () =
-  let helper =
-  { flop = [];
+  let new_player1= new_player () in
+  let new_player2= new_player () in
+  {flop = [];
   bet = 0;
   pot = 0;
-  players = (new_player())@[new_player()]
+  players = [(1,new_player());(2,new_player())];
   deck = Deck.rand_deck();
-  first_better = (List.tl g.first_better)@(List.hd g.first_better) } in
-
-  let d1 = deal_two (List.hd helper.players) (helper.deck) in
-  let d2 = deal_two (List.nth helper.players 1) (d1) in
-  {helper with deck = d2}
+  first_better = [1;2] } 
 
 
 
