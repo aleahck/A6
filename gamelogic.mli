@@ -25,13 +25,6 @@ HighCard of card list
 * It could be fewer than seven cards for AI *)
 val determine_best_hand : card list -> hand
 
-
-(* Converts a hand to its rank relative to other hands.
-* This is only enough to compare hands of the same hand type,
-* comparisons within hands is done in some helper function
-* i.e. HighCard -> 0, Pair -> 1, etc.*)
-val hand_to_hand_rank : hand -> int
-
 (* Function for comapring hands, will call a helper function for
 * breaking ties between same rankings of hands.
 * Ex: TwoPair AA338 > AA228

@@ -1,8 +1,8 @@
 
 type suit = Hearts | Diamonds | Clubs | Spades
 
-type value = Ace | King | Queen | Jack | Ten | Nine | Eight
-                 | Seven | Six | Five | Four | Three | Two
+type value = Two | Three | Four | Five | Six | Seven | Eight |
+             Nine | Ten | Jack | Queen | King | Ace
 
 type card = value * suit
 

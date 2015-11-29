@@ -15,7 +15,6 @@ type hand =
 | StraightFlush of card list
 | RoyalFlush of card list
 
-
 (*general helper functions*)
 
 (* insertion sort
@@ -32,17 +31,136 @@ let rec insertion_sort (l:'a list) : 'a list =
 
 (* converts a hand to a card list *)
 let hand_to_card_list (h:hand) : card list =
-    match h with
-    | HighCard clist -> clist
-    | Pair clist -> clist
-    | TwoPair clist -> clist
-    | Triple clist -> clist
-    | Straight clist -> clist
-    | Flush clist -> clist
-    | FullHouse clist -> clist
-    | Quads clist -> clist
-    | StraightFlush clist -> clist
-    | RoyalFlush clist -> clist
+  match h with
+  | HighCard clist -> clist
+  | Pair clist -> clist
+  | TwoPair clist -> clist
+  | Triple clist -> clist
+  | Straight clist -> clist
+  | Flush clist -> clist
+  | FullHouse clist -> clist
+  | Quads clist -> clist
+  | StraightFlush clist -> clist
+  | RoyalFlush clist -> clist
+
+(* returns the suit that occurs most frequently in the card list
+* and the number of times it occurs as a pair
+* if more than one suit occurs the same amount of times, one
+* is chosen randomly *)
+let most_common_suit (c:card list) : suit option * int =
+  let rec loop clist h d cl s =
+    match clist with
+    | [] -> let final = max h (max d (max cl s)) in
+            if final = h then (suit_of_string "H",final)
+            else if final = d then (suit_of_string "D",final)
+            else if final = cl then (suit_of_string "C",final)
+            else (suit_of_string "S",final)
+    | hd::t -> if Some (suit_of_card hd) = suit_of_string "H"
+               then loop t (h+1) d cl s
+               else if Some (suit_of_card hd) = suit_of_string "D"
+               then loop t h (d+1) cl s
+               else if Some (suit_of_card hd) = suit_of_string "C"
+               then loop t h d (cl+1) s
+               else loop t h d cl (s+1)
+            in loop c 0 0 0 0
+
+(*check if a card list contains a royal flush*)
+let royal_flush_check (c:card list) : bool =
+  let s = fst (most_common_suit c) in
+  let rec loop clist acc =
+    match (insertion_sort clist) with
+    | [] -> if acc >= 5 then true else false
+    | hd::t -> if Some (suit_of_card hd) = s &&
+               Some (val_of_card hd) > value_of_string "9"
+               then loop t (acc + 1)
+               else loop t acc
+  in loop c 0
+
+(*check if a card list contains a straight flush*)
+let straight_flush_check (c:card list) : bool =
+  let s = fst (most_common_suit c) in
+  let rec loop clist acc =
+    match (insertion_sort clist) with
+    | [] -> if acc >= 5 then true else false
+    | h1::t -> if acc >= 5 then true else false
+    | h1::h2::t -> if Some (suit_of_card h1) = s && Some (suit_of_card h2) = s
+               && one_step_below h2 h1 || (Some (suit_of_card h1) = s &&
+               Some (val_of_card h1) = value_of_string "A" &&
+               let five = match (card_of_string ("5 "^suit_to_string (suit_of_card h1))) with
+                          | Some f -> f
+                          | None -> failwith "what to do here?" in
+               List.mem five clist)
+               then loop (h2::t) (acc + 1)
+               else loop (h2::t) acc
+  in loop c 0
+
+(*check if a card list contains four of a kind*)
+let rec quads_check (c:card list) : bool =
+  match (insertion_sort c) with
+  | _ -> false
+  | h1::h2::h3::h4::t -> if val_of_card h1 = val_of_card h2 &&
+                         val_of_card h2 = val_of_card h3 &&
+                         val_of_card h3 = val_of_card h4
+                         then true
+                         else quads_check (h2::h3::h4::t)
+
+(*check if a card list contains a flush*)
+let flush_check (c:card list) : bool =
+  let s = fst (most_common_suit c) in
+  let rec loop clist acc =
+    match (insertion_sort clist) with
+    | [] -> if acc >= 5 then true else false
+    | hd::t -> if Some (suit_of_card hd) = s
+               then loop t (acc + 1)
+               else loop t acc
+  in loop c 0
+
+(*check if a card list contains a straight *)
+let straight_check (c:card list) : bool =
+  let rec loop clist acc =
+    match (insertion_sort clist) with
+    | [] -> if acc >= 5 then true else false
+    | h1::h2::t -> if one_step_below h2 h1 ||
+               Some (val_of_card h1) = value_of_string "A" &&
+               List.mem (value_of_string "5") (List.map val_of_card clist))
+               then loop (h2::t) (acc + 1)
+               else loop (h2::t) acc
+  in loop c 0
+
+(*check if a card list contains three of a kind*)
+let rec triple_check (c:card list) : bool =
+  match (insertion_sort c) with
+  | _ -> false
+  | h1::h2::h3::t -> if val_of_card h1 = val_of_card h2 &&
+                     val_of_card h2 = val_of_card h3 &&
+                     not List.mem (val_of_card h1) (List.map value_of_card c)
+                     then true
+                     else triple_check h2::h3::t
+
+(*returns the first pair in the card list - this is fine
+* because determine best hand will have already checked for everything else*)
+let rec pair_check (c:card list) : bool =
+  match (insertion_sort c) with
+  | _ -> false
+  | h1::h2::t -> if val_of_card h1 = val_of_card h2 &&
+                 not List.mem (val_of_card h1) (List.map value_of_card c)
+                 then true
+                 else pair_check h2::t
+
+(*check if a card list contains a full house*)
+let rec full_house_check (c:card list) : bool =
+  triple_check c && pair_check c
+
+(*check if a card list contains two pair - could be part of other hands,
+*but determine_best_hand will have checked for this already *)
+let two_pair_check (c:card list) : bool =
+  let rec loop clist acc =
+    match (insertion_sort clist) with
+    | [] -> if acc > 1 then true else false
+    | h::[] -> if acc > 1 then true else false
+    | h1::h2::t -> if pair_check h1::h2 then loop t (acc+1)
+                   else pair_check h2::t
+                 in loop c 0
 
 (* A function for converting cards to a player's BEST POSSIBLE hand.
 * It will presumably be used extensively in the game to determine the winner
@@ -51,17 +169,23 @@ let hand_to_card_list (h:hand) : card list =
 * the best possible hand, we need all 7 available cards,
 * the 2 from a player's hand and the 5 from the board.
 * It could be fewer than seven cards for AI *)
-let determine_best_hand (c:card list) : hand = failwith "TODO"
-
-
-(* Converts a hand to its rank relative to other hands.
-* This is only enough to compare hands of the same hand type,
-* comparisons within hands is done in some helper function
-* i.e. HighCard -> 0, Pair -> 1, etc.*)
-let hand_to_hand_rank (h:hand) : int = failwith "TODO"
+let determine_best_hand (c:card list) : hand =
+  match (insertion_sort c) with
+  | [] -> failwith "implement"
+  | h::t -> failwith "implement"
+  (*
+  check for pairs
+  check for two pair
+  check for three pair, keep higher two
+  check for triples
+  check for quads
+  check for fullhouses
+  check for straight
+  check for flushes
+  check for straight flushes + royal flushes*)
 
 (*helpers for compare_hands
-*invariant: all card lists have 5 cards upon initial function call*)
+*invariant: all card lists have 5 cards upon initial function call?*)
 
 (*HighCard comparison*)
 let rec compare_high_card (h1:card list) (h2:card list) : card list =
@@ -165,6 +289,25 @@ let rec compare_flush (h1:card list) (h2:card list) : card list =
                          else compare_high_card [x1] [x2]
   | _ -> failwith "not possible"
 
+(* FullHouse comparison *)
+
+let rec compare_full_house (h1:card list) (h2:card list) : card list =
+  let tripleValue1 = value_of_triple h1 in
+  let tripleValue2 = value_of_triple h2 in
+  if tripleValue1 > tripleValue2 then h1
+  else if tripleValue1 < tripleValue2 then h2
+  else let rec loop hnd1 hnd2 =
+  match (h1,h2) with
+  | ([],[]) -> failwith "same hands"
+  | (x1::xs1,x2::xs2) -> if val_of_card x1 = tripleValue1
+                         then loop xs1 xs2
+                         else
+                         (if val_of_card x1 > val_of_card x2 then h1
+                         else if val_of_card x1 < val_of_card x2 then h2
+                         else h1) (*same hands*)
+  | _ -> failwith "not possible"
+  in loop h1 h2
+
 (* Quads comparison *)
 
 let rec compare_quads (h1:card list) (h2:card list) : card list =
@@ -189,17 +332,10 @@ let rec compare_straight_flush (h1:card list) (h2:card list) : card list =
 (* RoyalFlush comparison *)
 
 (* The only time both players can have a royal flush is when the
-* 5 board cards make a royal flush so this will split the spot *)
+* 5 board cards make a royal flush so this will split the pot *)
 let rec compare_royal_flush (h1:card list) (h2:card list) : card list =
   failwith "Same hands"
 
-
-(* Function for comapring hands, will call a helper function for
-* breaking ties between same rankings of hands.
-* Ex: TwoPair AA338 > AA228
-* Full House 99944 > 99444
-* Returns the hand that is better. What to do if the hands are the same?
-* Will need to conver result back to hand with determine_best_hand *)
 let compare_hands (h1:hand) (h2:hand) : hand =
   if h1 > h2 then h1
   else if h2 > h1 then h2
@@ -210,10 +346,17 @@ let compare_hands (h1:hand) (h2:hand) : hand =
                 (hand_to_card_list h1) (hand_to_card_list h2))
   | TwoPair (_) -> determine_best_hand (compare_two_pair
                    (hand_to_card_list h1) (hand_to_card_list h2))
-  | Triple (_) -> failwith "Implement"
-  | Straight (_) -> failwith "Implement"
-  | Flush (_) -> failwith "Implement"
-  | FullHouse (_) -> failwith "Implement"
-  | Quads (_) -> failwith "Implement"
-  | StraightFlush (_) -> failwith "Implement"
-  | RoyalFlush (_) -> failwith "Implement"
+  | Triple (_) -> determine_best_hand (compare_triple
+                  (hand_to_card_list h1) (hand_to_card_list h2))
+  | Straight (_) -> determine_best_hand (compare_straight
+                    (hand_to_card_list h1) (hand_to_card_list h2))
+  | Flush (_) -> determine_best_hand (compare_flush
+                 (hand_to_card_list h1) (hand_to_card_list h2))
+  | FullHouse (_) -> determine_best_hand (compare_full_house
+                     (hand_to_card_list h1) (hand_to_card_list h2))
+  | Quads (_) -> determine_best_hand (compare_quads
+                 (hand_to_card_list h1) (hand_to_card_list h2))
+  | StraightFlush (_) -> determine_best_hand (compare_straight_flush
+                         (hand_to_card_list h1) (hand_to_card_list h2))
+  | RoyalFlush (_) -> determine_best_hand (compare_royal_flush
+                      (hand_to_card_list h1) (hand_to_card_list h2))
