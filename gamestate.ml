@@ -124,7 +124,7 @@ let deal_two (g:game)
   (Deck.top2_cards g.deck, this_pair)
 
 
-let new_game () =
+let make_game () =
   let new_player1= new_player () in
   let new_player2= new_player () in
   {flop = [];
