@@ -73,21 +73,23 @@ let new_hand (g:game) =
 					     snd_player_original.stake+g.pot in
   let new_start= List.nth g.first_better 1 in
   if (new_start=fst_id) then
-    {flop= [];
+    let undelt= 
+     {flop= [];
      bet=0;
      pot=0;
      players= [(fst_id,fst_player);(snd_id,snd)player)];
      deck= Deck.rand_deck();
      first_better= (List.tl g.first_better)@ [List.hd g.first_better]
-  }
+  } in deal_two undelt
   else
+    let undelt=
     {flop = [];
      bet = 0;
      pot = 0;
      players = [(snd_id,snd_player);(fst_id,fst_player)];
      deck = Deck.rand_deck();
-     first_better = (List.tl g.first_better)@[List.hd g.first_better] }
-
+     first_better = (List.tl g.first_better)@[List.hd g.first_better] } in
+     deal_two undelt
 
 (* Only works for 2 players; only ends the hand instead of continuing hand
   without player who folded. *)
