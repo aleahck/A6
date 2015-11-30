@@ -2,11 +2,16 @@ open Deck
 open Card
 open Gamelogic
 
+
 type player = {
     stake: int;
     mutable cards: card list option;
     amount_in: int
   }
+
+let BIG_BLIND= 2
+
+let LITTLE_BLIND=1
 
 type id = int
 
@@ -59,7 +64,8 @@ let check (g:game) =
 
 (* Helper for fold and dealer. Creates new hand on the turn a player folds. *)
 let new_hand (g:game) =
-  let fst_player= snd (List.hd g.players) in
+  let fst_player1= snd (List.hd g.players) in
+  let fst_player= fst_player1 with stake=fst_player1-BIG_BLIND
   let fst_id= fst (List.hd g.players) in
   let snd_player_original = snd (List.nth g.players 1) in
   let snd_id= fst (List.nth g.players 1) in
