@@ -6,6 +6,8 @@ type value = Two | Three | Four | Five | Six | Seven | Eight |
 
 type card = value * suit
 
+exception InvalidString
+
 let suit_of_card (c: card) = snd c
 
 let val_of_card (c: card) = fst c
@@ -13,41 +15,42 @@ let val_of_card (c: card) = fst c
 let suit_of_string s =
   let s2 = String.capitalize s in
   match s2 with
-  | "H" | "Hearts"   -> Some Hearts
-  | "D" | "Diamonds" -> Some Diamonds
-  | "C" | "Clubs"    -> Some Clubs
-  | "S" | "Spades"   -> Some Spades
-  | _                -> None
+  | "H" | "Hearts"   -> Hearts
+  | "D" | "Diamonds" -> Diamonds
+  | "C" | "Clubs"    -> Clubs
+  | "S" | "Spades"   -> Spades
+  | _                -> raise InvalidString
 
 let value_of_string s =
   let s2 = String.capitalize s in
   match s2 with
-  | "2"  | "Two"   -> Some Two
-  | "3"  | "Three" -> Some Three
-  | "4"  | "Four"  -> Some Four
-  | "5"  | "Five"  -> Some Five
-  | "6"  | "Six"   -> Some Six
-  | "7"  | "Seven" -> Some Seven
-  | "8"  | "Eight" -> Some Eight
-  | "9"  | "Nine"  -> Some Nine
-  | "10" | "Ten"   -> Some Ten
-  | "J"  | "Jack"  -> Some Jack
-  | "Q"  | "Queen" -> Some Queen
-  | "K"  | "King"  -> Some King
-  | "A"  | "Ace"   -> Some Ace
-  | _              -> None
+  | "2"  | "Two"   -> Two
+  | "3"  | "Three" -> Three
+  | "4"  | "Four"  -> Four
+  | "5"  | "Five"  -> Five
+  | "6"  | "Six"   -> Six
+  | "7"  | "Seven" -> Seven
+  | "8"  | "Eight" -> Eight
+  | "9"  | "Nine"  -> Nine
+  | "10" | "Ten"   -> Ten
+  | "J"  | "Jack"  -> Jack
+  | "Q"  | "Queen" -> Queen
+  | "K"  | "King"  -> King
+  | "A"  | "Ace"   -> Ace
+  | _              -> raise InvalidString
 
 let card_of_string s =
-  let slist = Str.split (Str.regexp "[ \t]+") (String.capitalize s) in
+  let slist = Str.split (Str.regexp "[ \t]+") s in
+  let slist_cap = List.map String.capitalize slist in
   let card_string s1 s2 =
-    match (value_of_string s1),(suit_of_string s2) with
-    | Some v1, Some v2 -> Some (v1,v2)
-    | _                -> None
+    try (value_of_string s1),(suit_of_string s2) with
+    | InvalidString -> raise InvalidString
   in
-  match slist with
+  match slist_cap with
   | h1::h2::[]     -> card_string h1 h2
-  | h1::h2::h3::[] -> if h2 = "Of" then card_string h1 h3 else None
-  | _              -> None
+  | h1::h2::h3::[] -> ( if h2 = "Of" then card_string h1 h3 
+                        else raise InvalidString )
+  | _              -> raise InvalidString
 
 let suit_to_string (s: suit) = match s with
   | Hearts   -> "Hearts"

@@ -5,13 +5,10 @@ exception DeckEmpty
 type deck = card list
 
 let order_deck () =
-  match card_of_string "2 H" with
-  | Some start_c -> ( let rec next_card c l =
-                        if c = start_c then l
-                        else next_card (card_above c) (c::l)
-                      in
-                      next_card (card_above start_c) [start_c] )
-  | None         -> []
+  let start_c = card_of_string "2 H" in
+  let rec next_card c l = if c = start_c then l
+                          else next_card (card_above c) (c::l) in
+  next_card (card_above start_c) [start_c]
 
 let rand_deck () = 
   let arr = Array.of_list (order_deck ()) in

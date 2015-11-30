@@ -7,6 +7,8 @@ type suit
 (* abstract type representing a Card's face value *)
 type value
 
+exception InvalidString
+
 (* returns the suit of a card *)
 val suit_of_card: card -> suit
 
@@ -15,18 +17,18 @@ val val_of_card: card -> value
 
 (* returns the card represented by the string: "value suit"
  * ie: "K H" returns King of Hearts, "10 D" returns Ten of Diamonds
- * returns None if string is not a valid representation of a card. *)
-val card_of_string: string -> card option
+ * raises InvalidString if string is not a valid representation of a card. *)
+val card_of_string: string -> card
 
 (* returns the value represented by the string: "value"
  * ie: "Q" returns Queen, "2" returns Two
- * returns None if string is not a valid representation of a value. *)
-val value_of_string: string -> value option
+ * raises InvalidString if string is not a valid representation of a value. *)
+val value_of_string: string -> value
 
 (* returns the suit represented by the string: "suit"
  * ie: "H" returns Hearts, "C" returns Clubs
- * returns None if string is not a valid representation of a suit. *)
-val suit_of_string: string -> suit option
+ * raises InvalidString if string is not a valid representation of a suit. *)
+val suit_of_string: string -> suit
 
 (* returns the string representing the provided suit.
  * ie: Hearts returns "Hearts" *)
