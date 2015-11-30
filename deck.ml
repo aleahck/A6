@@ -29,11 +29,11 @@ let top_card (d: deck) = match d with
   | h::t -> (h,t)
 
 let top2_cards (d: deck) = match d with
-  | h1::h2::t -> (h1,h2,t)
+  | h1::h2::t -> ([h1;h2],t)
   | _         -> raise DeckEmpty
 
 let top3_cards (d: deck) = match d with
-  | h1::h2::h3::t -> (h1,h2,h3,t)
+  | h1::h2::h3::t -> ([h1;h2;h3],t)
   | _             -> raise DeckEmpty
   
 

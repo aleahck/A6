@@ -56,11 +56,14 @@ let is_valid_bet (i:int) (g:game) =
   else if (* implement blind rules *)
   else return true
 
+
 let call (g:game) =
   do_raise g 0
 
+
 let check (g:game) =
   { g with players = (List.tl g.players)@[(get_current_id),(current_player g)] }
+
 
 (* Helper for fold and dealer. Creates new hand on the turn a player folds. *)
 let new_hand (g:game) =
@@ -103,8 +106,8 @@ let dealer (g:game) =
   let big_blind = List.hd g.first_better in
   let small_blind = List.nth g.first_better 1 in
   if !(List.for_all
-    (fun x -> if x = big_blind then x.stake > 2
-      else if x = small_blind then x.stake > 1
+    (fun x -> if x = big_blind then x.stake > 2 (* arbitrary *)
+      else if x = small_blind then x.stake > 1 (* arbitrary *)
       else x.stake > 0)
     (g.players)) then None else
   Some (new_hand g)
@@ -118,18 +121,27 @@ let new_player () =
 
 
 (* Only works if Deck.top2_cards returns (card list * deck) *)
-let deal_two (p:player) (d:deck) =
-  p.cards <- Some (fst (Deck.top2_cards d)) ;
-  snd (Deck.top2_cards d)
+let deal_two (g:game) =
+  let d1 = Deck.top2_cards g.deck in
+  let d2 = Deck.top2_cards (snd d1) in
+  let p1 = snd (List.hd g.players) in
+  let p2 = snd (List.tl g.players) in
+  p1.cards <- Some (fst (d1)) ;
+  p2.cards <- Some (fst (d2)) ;
+  { g with
+    players = [(fst (List.hd g.players), p1) ; (fst (List.tl g.players), p2)] ;
+    deck = snd d2 }
+
 
 (*[deal_two g] takes in a game and returns a pair containing the deck from
 *[g] with the first two cards removed and a player, id pair with those two
-*cards in the cards field of the player*)
+*cards in the cards field of the player
 let deal_two (g:game)
   let this_player=(current_player g with cards=
 					  Some (fst (Deck.top2_cards g.deck)) in
   let this_pair=(get_current_id g,this_player) in
   (Deck.top2_cards g.deck, this_pair)
+*)
 
 
 let make_game () =
@@ -155,9 +167,6 @@ let rec string_of_clist lst acc =
 (* Turns player list into string.
 * Only prints out the player IDs (i.e. "Player 1, Player 2, Player 3")
 * Helper function for to_string functions. *)
-
-(* NOTE!!! Should we change this to print out only players still in game?
- * Should we print out players at all? *)
 let rec string_of_plist lst acc =
   match lst with
     | h::[] -> let acc2 = acc ^ "Player " ^ (string_of_int (fst h)) in
@@ -170,19 +179,11 @@ let rec string_of_plist lst acc =
 let game_to_string (g:game) =
   "The flop is: " ^ (string_of_clist g.flop "") ^ "\n" ^
   "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
-  "The pot is: " ^ (string_of_int g.pot) ^ "\n" ^
-  "The players are: " ^ (string_of_plist g.players "")
-  (* NOTE!!! Don't need to print deck. Do we need first better? *)
-
-
-(* Helper function for player_to_string. *)
-(* NOTE!!! Not sure if necessary? Will None ever need to be printed? *)
-let opt_cards (p:player) =
-  if p.cards = None then "None" else string_of_clist p.cards
+  "The pot is: " ^ (string_of_int g.pot) ^ "\n"
 
 
 let player_to_string (p:player) =
   "Your stake is: " ^ (string_of_int p.stake) ^ "\n" ^
-  "Your cards are: " ^ (opt_cards p) ^ "\n" ^
-  "You have bet: " ^ (string_of_int p.amount_n)
+  "Your cards are: " ^ (string_of_clist p.cards) ^ "\n" ^
+  "You have bet: " ^ (string_of_int p.amount_n) ^ "\n"
 
