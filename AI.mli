@@ -1,5 +1,5 @@
 open Gamestate
-open Logic
+open Gamelogic
 open Card
 
 (* Takes in a game state, calculates a move, and returns the updated game state.*)

@@ -39,7 +39,7 @@ let value_of_string s =
   | "A"  | "Ace"   -> Ace
   | _              -> raise InvalidString
 
-let card_of_string s =
+let card_of_string (s: string) : card =
   let slist = Str.split (Str.regexp "[ \t]+") s in
   let slist_cap = List.map String.capitalize slist in
   let card_string s1 s2 =
@@ -101,7 +101,7 @@ let suit_above = function
   | Clubs    -> Spades
   | Spades   -> Hearts
 
-let card_above ((v,s): card) =
+let card_above ((v,s): card) : card =
   let v2 = value_above v in
   let s2 = if v = Ace then suit_above s else s in
   (v2,s2)
