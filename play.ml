@@ -1,6 +1,8 @@
 open AI
 open Gamestate
 
+type validity= Valid of game| Invalid
+
 (*Takes in a command as a string and returns a string containing only the 
 *first word.*)
 let first_word command=
@@ -24,28 +26,29 @@ let second_word command=
 let choose_action (g:game) (c:command)=
   let first= first_word command in
   match first with 
-  |"repeat"-> g
-  |"check"-> if (is_valid_bet 0 g) then Some (check g) else
-	       None
-  |"call"-> if (is_valid_bet g.bet g) then Some (call g) else 
-	      None
-  |"fold"-> Some (fold g)
+  |"repeat"-> Valid g
+  |"check"-> if (is_valid_bet 0 g) then Valid (check g) else
+	       Invalid
+  |"call"-> if (is_valid_bet g.bet g) then Valid (call g) else 
+	      Invalid
+  |"fold"-> Valid (fold g)
   |"raise"->(
     let second= second_word command in
     let i= try (let num= int_of_string second in
-	           if (is_valid_bet (g.bet+i)) then Some (raise_by i g) else 
-		     None
+	           if (is_valid_bet (g.bet+i)) then Valid (raise_by i g) else 
+		     Invalid
 	       ) with
-	   |Failure "int_of_string"-> None)
+	   |Failure "int_of_string"-> Invalid)
 
-  |_-> None
+  |_-> Invalid
 
 let play_game  (g: game)= 
+  let List.for_all (fun x-> (snd x).stake)> 0) g.players
   let command= read_line() in
   let new_game= choose_action g command in 
   match new_game with
-    |Some gm-> print_string (string_of_game gm); play_game gm
-    |None-> print_string "Invalid input"; play_game g
+    |Valid gm-> print_string (string_of_game gm); play_game gm
+    |Invalid-> print_string "Invalid input"; play_game g
  
 let _= 
   let new_game= Gamestate.make_game () in
