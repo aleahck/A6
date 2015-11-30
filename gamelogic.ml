@@ -17,7 +17,7 @@ type hand =
 
 (*general helper functions*)
 
-(* insertion sort
+(* insertion sort for sorting by a cards value
 * useful for sorting lists of cards *)
 let rec insertion_sort (l:'a list) : 'a list =
   match l with
@@ -28,6 +28,19 @@ let rec insertion_sort (l:'a list) : 'a list =
   | [] -> [elem]
   | h1::t1 -> if (val_of_card elem) < (val_of_card h1) then elem::h1::t1
                 else h1::insert elem t1
+
+(* insertion sort for sorting by a cards SUIT useful for sorting lists of cards
+* Suit order is Spades > Clubs > Diamonds > Hearts *
+* TEST THIS *)
+let rec insertion_sort_suit (l:'a list) : 'a list =
+  match l with
+  | [] -> []
+  | h::t -> insert h (insertion_sort t)
+  and insert elem lst =
+  match lst with
+  | [] -> [elem]
+  | h1::t1 -> if (suit_of_card elem) < (suit_of_card h1) then elem::h1::t1
+              else h1::insert elem t1
 
 (* converts a hand to a card list *)
 let hand_to_card_list (h:hand) : card list =
@@ -94,14 +107,16 @@ let straight_flush_check (c:card list) : bool =
                else loop (h2::t) acc
   in loop c 0
 
-(*check if a card list contains four of a kind*)
-let rec quads_check (c:card list) : bool =
+(*check if a card list contains four of a kind
+* Returns a bool * value option pair, with value being the
+* value of the cards that make up the four of a kind*)
+let rec quads_check (c:card list) : bool * value option =
   match (insertion_sort c) with
-  | _ -> false
+  | _ -> (false,None)
   | h1::h2::h3::h4::t -> if val_of_card h1 = val_of_card h2 &&
                          val_of_card h2 = val_of_card h3 &&
                          val_of_card h3 = val_of_card h4
-                         then true
+                         then (true,val_of_card h1)
                          else quads_check (h2::h3::h4::t)
 
 (*check if a card list contains a flush*)
@@ -170,19 +185,110 @@ let two_pair_check (c:card list) : bool =
 * the 2 from a player's hand and the 5 from the board.
 * It could be fewer than seven cards for AI *)
 let determine_best_hand (c:card list) : hand =
-  match (insertion_sort c) with
-  | [] -> failwith "implement"
-  | h::t -> failwith "implement"
-  (*
-  check for pairs
-  check for two pair
-  check for three pair, keep higher two
-  check for triples
-  check for quads
-  check for fullhouses
-  check for straight
-  check for flushes
-  check for straight flushes + royal flushes*)
+  match royal_flush_check c with
+  | true -> let s = most_common_suit c in
+            let rec loop c2 =
+            match (insertion_sort_suit (insertion_sort c2)) with
+            | _ -> failwith "?"
+            | h1::h2::h3::h4::h5::t -> if suit_of_card h1 = s
+                                       then RoyalFlush ([h1;h2;h3;h4;h5])
+                                       else loop (h2::h3::h4::h5::t)
+                                     in loop c
+  | false ->
+  match straight_flush_check c with
+  | true -> let s = most_common_suit c in
+            let rec loop c2 =
+            match (insertion_sort_suit (insertion_sort c2)) with
+            | _ -> failwith "?"
+            | h1::h2::h3::h4::h5::t -> if suit_of_card h1 = s
+                                       then StraightFlush ([h1;h2;h3;h4;h5])
+                                       else loop (h2::h3::h4::h5::t)
+                                     in loop c
+  | false ->
+  match fst (quads_check c) with
+  | true -> let v = snd (quads_check c) in
+            let rec loop c2 =
+            match (insertion_sort c2) with
+            | _ -> failwith "?"
+            | h1::h2::h3::h4::h5::t -> if val_of_card h1 = v
+                                       || val_of_card h2 = v
+                                       then Quads ([h1,h2,h3,h4,h5])
+                                       else loop (h3::h4::h5::t)
+                                     in loop c
+  | false ->
+  match full_house_check c with
+  | true -> let vt = value_of_triple (insertion_sort c) in
+            let vp = value_of_pair (insertion_sort c) in
+            let rec loop c2 acc =
+            match (insertion_sort c2) with
+            | [] -> FullHouse (acc)
+            | h::t -> if val_of_card h = vt || val_of_card h = vp
+                      then loop t acc@h
+                      else loop t acc
+                      in loop c []
+  | false ->
+  match flush_check c with
+  | true -> let s = most_common_suit c in
+            let rec loop c2 =
+            match (insertion_sort_suit (insertion_sort c2)) with
+            | _ -> failwith "?"
+            | h1::h2::h3::h4::h5::t -> if suit_of_card h1 = s
+                                       then Flush ([h1;h2;h3;h4;h5])
+                                       else loop (h2::h3::h4::h5::t)
+                                     in loop c
+  | false ->
+  match straight_check c with
+  | true -> let rec loop c2 =
+            match (insertion_sort c2) with
+            | _ -> failwith "?"
+            | h1::h2::h3::h4::h5::t -> if suit_of_card h1 = s
+                                       then StraightFlush ([h1;h2;h3;h4;h5])
+                                       else loop (h2::h3::h4::h5::t)
+                                     in loop c
+  | false ->
+  match triple_check c with
+  | true -> let vt = value_of_triple (insertion_sort c) in
+            let rec loop c2 acc1 acc2 =
+            match (insertion_sort c2) with
+            | [] -> let highcards = insertion_sort acc2 in
+                    Triple (acc1@(List.nth highcards 0)@(List.nth highcards 1))
+            | h::t -> if val_of_card h = vt
+                      then loop t acc1@h acc2
+                      else loop t acc1 acc2@h
+                      in loop c [] []
+  | false ->
+  match two_pair_check c with
+  | true -> let vp = value_of_pair (insertion_sort c) in
+            let rec loop c2 acc1 acc2 =
+            match (insertion_sort c2) with
+            | [] -> let vp2 = value_of_pair (insertion_sort acc2) in
+                    let rec loop2 c3 acc3 acc4 =
+                    match acc1 with
+                    | [] -> let highcard = List.nth (insertion_sort acc4) 0 in
+                            TwoPair (c3@acc3@highcard)
+                    | h::t -> if val_of_card h = vp2
+                              then loop2 t acc3@h acc4
+                              else loop2 t acc3 acc4@h
+                            in loop2 acc2 [] []
+            | h::t -> if val_of_card h = vp
+                      then loop t acc1@h acc2
+                      else loop t acc1 acc2@h
+                      in loop c [] []
+  | false ->
+  match pair_check c with
+  | true -> let vp = value_of_pair (insertion_sort c) in
+            let rec loop c2 acc1 acc2 =
+            match (insertion_sort c2) with
+            | [] -> let highcards = insertion_sort acc2 in
+                    Pair (acc@(List.nth highcards 0)@(List.nth highcards 1)@
+                         (List.nth highcards 2))
+            | h::t -> if val_of_card h = vp
+                      then loop t acc1@h acc2
+                      else loop t acc1 acc2@h
+                      in loop c [] []
+  | false -> match insertion_sort c with
+             | _ -> failwith "?"
+             | h1::h2::h3::h4::h5::t -> HighCard ([h1;h2;h3;h4;h5])
 
 (*helpers for compare_hands
 *invariant: all card lists have 5 cards upon initial function call?*)
