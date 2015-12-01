@@ -29,7 +29,7 @@ let first_word command=
 let second_word command= 
   let lower_trimmed= String.trim (String.lowercase command) in
   let space= try String.index lower_trimmed ' ' with 
-	       |Not_found-> failwith "No second word should be valid" in
+	       |Not_found-> failwith "No second word" in
   let untrimmed= String.sub lower_trimmed space 
 			    ((String.length lower_trimmed)-space)in
   String.trim untrimmed
@@ -44,7 +44,8 @@ let rec choose_action (g:game)=
   (print_string "Enter a command";
   let command= read_line () in
   let first= first_word command in
-  let second= second_word command in
+  let second= try (second_word command) with 
+	      |Failure "No second word"-> "" in
   match g.last_move with 
     |Call-> print_string "This round of betting has concluded\n";g 
     |Check->begin match first with
