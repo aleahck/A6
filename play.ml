@@ -86,7 +86,7 @@ let rec play_game  (g: game)=
   |Flop|Turn-> let betting= choose_action new_h in
 	       play_game (add1_flop betting)
   |River-> let betting= choose_action new_h in
-	   let the_winner= winner g in
+	   let the_winner= fst (winner g) in
 	   print_string winner_to_string;
 	   let new_ps= if (the_winner= get_current_id g)
 		       then List.rev g.players
