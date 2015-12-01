@@ -82,14 +82,15 @@ let turn g =
   let modified_points = (rand_multiplier ()) *. (hand_points g) in
   let points_needed = (point_standard g) /. (pot_odds g) in
   let diff_in_points = int_of_float (modified_points -. points_needed) in
-  if diff_in_points <= 0 && (g.last_move = Check || g.last_move = Deal) then
+  let can_check = g.last_move = Check || g.last_move = Deal in
+  if can_check && diff_in_points <= 10 then
     (print_endline "AI checks" ; check g)
   else if diff_in_points <= 0 then
     (print_endline "AI folds" ; fold g)
-  else if diff_in_points > 10 then (*not sure when he can raise*)
+  else if diff_in_points <= 10 then
+    (print_endline "AI calls" ; call g)
+  else (*not sure when he can raise*)
     let amount = floor_bet_to_all_in (diff_in_points - (call_amount g)) g in
     (Printf.printf "AI raise %d\n" amount ; do_raise g amount)
-  else
-    (print_endline "AI calls" ; call g)
 
 
