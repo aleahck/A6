@@ -3,6 +3,14 @@ open Gamestate
 
 type validity= Valid of game| Invalid
 
+type gamestage= Initial | Flop | Turn | River 
+
+let game_stage g= match g.flop with 
+    |a::b::c::d::e::[]-> River
+    |a::b::c::d::[]-> Turn
+    |a::b::c::[]-> Flop
+    |_-> Initial
+
 (*Takes in a command as a string and returns a string containing only the 
 *first word.*)
 let first_word command=
@@ -21,56 +29,76 @@ let second_word command=
 			    ((String.length lower_trimmed)-space)in
   String.trim untrimmed
 
-let deal_flop g= 
-  let one_added= add1_flop g in
-  if (List.length g.flop > 5) 
-  then new_hand final_bet  
-  else(
-    if ((List.length g.flop)=0) 
-    then add1_flop (add1_flop one_added) 
-    else one_added)
+let play_raise g second= let num= int_of_string second in
+			     if (is_valid_raise num delt) 
+			     then choose_action (turn (raise_by i delt)))
+					 else print_string "Invalid input"; g
+					)
   
 (*Takes in a game, performs an action, and returns some of a modified game or 
 *None if the command isn't valid*)
-let choose_action (g:game) (c:command)=
+let rec choose_action (g:game)=
+  print_string (game_to_string g);
+  if (out_of_money g) then g  
+  else
+  print_string "Enter a command";
+  let command= read_line () in
   let first= first_word command in
+  let second= second_word command in
   let delt= deal_flop g in
-  match first with
-  |"exit"-> exit 0;
-  |"repeat"-> Valid delt
-  |"check"-> if (is_valid_bet 0 delt) then Valid (check delt) else
-	       Invalid
-  |"call"-> if (is_valid_bet delt.bet delt) then Valid (call delt) else 
-	      Invalid
-  |"fold"-> Valid (fold delt)
-  |"raise"->(
-    let second= second_word command in
-    let i= try (let num= int_of_string second in
-	           if (is_valid_bet (delt.bet+i)) then 
-		     Valid (raise_by i delt) else
-		     Invalid
-	       ) with
-	   |Failure "int_of_string"-> Invalid)
+  match g.last_move with 
+    |Call-> print_string "This round of betting has concluded\n";g 
+    |Check->begin match first with
+		  |"check"-> check g
+		  |"raise"-> let raised= try play_raise g second with
+			       |Failure "int_of_string"-> print_string
+							    "Invalid input"; g in
+			     choose_action raised
+		  |"fold"-> fold g
+		  |"exit"-> exit 0
+	          |_-> print_string "Invalid input"; choose_action g end
+    |Raise _-> begin match first with
+		  |"raise"-> let raised= try play_raise g second with
+			       |Failure "int_of_string"-> print_string
+							    "Invalid input"; g in
+			     choose_action raised
+		  |"call"-> print_string 
+			      "This round of betting has concluded\n";g 
+		  |"fold"-> fold g
+		  |"exit"-> exit 0
+		  |_-> print_string "Invalid input"; choose_action g end
+    |Fold-> failwith "a new hand should have started from AI"
+    |Deal-> begin match first with
+		  |"raise"-> let raised= try play_raise g second with
+			       |Failure "int_of_string"-> print_string
+							    "Invalid input"; g in
+			     choose_action raised
+		  |"check"-> choose_action (turn (check g))
+		  |"fold"-> fold g
+		  |"exit"-> exit 0
 
-  |_-> Invalid
 
-let play_game  (g: game)= 
-  let keep_playing= List.for_all (fun x-> ((snd x).stake)> 0) g.players in
-  if keep_playing then (
-  let command= read_line() in
-  let new_game= choose_action g command in 
-  match new_game with
-    |Valid gm-> print_string (string_of_game gm); play_game gm
-    |Invalid-> print_string "Invalid input"; play_game g)
-  else (let this_player= snd (List.hd (g.players)) in
-       if this_player.stake > 0 then print_string 
-				       "You win!\n" exit 0;
-       else print_string "You lose!\n" exit 0;
-       )	 
+let rec play_game  (g: game)= 
+  match game_stage g with
+  |Initial-> let new_h= fold g in
+	     let betting=choose_action new_h in
+	     play_game (add3_flop betting)
+  |Flop|Turn-> let betting= choose_action new_h in
+	       play_game (add1_flop betting)
+  |River-> let betting= choose_action new_h in
+	   let the_winner= winner g in
+	   print_string winner_to_string;
+	   let new_ps= if (the_winner= get_current_id g)
+		       then List.rev g.players
+		       else g.players in
+	   let ggame= {betting with players= new_ps} in
+	   play_game (flop ggame)
+	   	 
  
 let _= 
-  let new_game= Gamestate.make_game () in
+  let new_game= make_game () in
+  let new_h= fold new_game in 
   print_string "TODO";
   failwith "write stuff in the print statement above"
-  play_game new_game
+  play_game new_h
   
