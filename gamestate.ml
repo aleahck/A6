@@ -52,52 +52,52 @@ let do_player_raise (g:game) (p:player) (i: int)=
    amount_in= p.amount_in + (difference+i)
   }
 
+(* Returns false if any player in the game is out of money. *)
+let out_of_money (g:game) =
+  not (List.for_all (fun x -> (snd x).stake > 0) g.players)
+
+
+(* Returns false if the current player is unable to call.*)
+let is_valid_call (g:game) =
+  if (g.bet - (current_player g).amount_in) > (current_player g).stake
+    then false
+  else true
+
+(* Returns false if the current player is unable to check. *)
+let is_valid_check (g:game) =
+  if g.bet = (current_player g).amount_in then true else false
+
+(* Returns false if the current player is unable to raise the bet by i. *)
+let is_valid_raise (i:int) (g:game) =
+  let difference = g.bet - (current_player g).amount_in in
+  if (difference + i) <= (current_player g).stake then true
+  else false
+
+(* Raises the current bet and pot by i, subtracts it from the current player's
+* stake, adds it to their amount in, changes the current_player to the next
+* player, and changes the last_move to Raise. *)
 let do_raise (g:game) (i:int)=
   let new_player= do_player_raise g (current_player g) i in
   let p_id = get_current_id g in
   let new_players= List.tl (g.players)@[(p_id,new_player)] in
-  let new_pot= g.pot+ (g.bet-(current_player g).amount_in)+i in
   {flop= g.flop;
    bet= g.bet+i;
-   pot= new_pot;
+   pot= g.pot+i;
    players= new_players;
    deck= g.deck;
    first_better= g.first_better;
    last_move= Raise i
   }
 
-
-(* Checks if any player in the game is out of money. If so, then the remaining
-* cards are dealt and  *)
-let out_of_money (g:game) =
-  if (List.for_all (fun x -> (snd x).stake > 0) g.players) then true else false
-
-
-(* Checks if the current player is able to call.*)
-let is_valid_call (g:game) =
-  if (g.bet - (current_player g).amount_in) > (current_player g).stake
-    then false
-  else true
-
-(* Checks if the current player is able to check. *)
-let is_valid_check (g:game) =
-  if g.bet = (current_player g).amount_in then true else false
-
-(* Checks if a player is able to raise the bet by i. *)
-let is_valid_raise (i:int) (g:game) =
-  let difference = g.bet - (current_player g).amount_in in
-  if (difference + i) <= (current_player g).stake then true
-  else false
-
-
-(* Changes the last move to Call and  *)
+(* Changes the last move to Call and returns the new gamestate. *)
 let call (g:game) =
   { (do_raise g 0) with last_move= Call }
 
-(* Check *)
+(* Changes the last move to Check  *)
 let check (g:game) =
-  { g with players = (List.tl g.players)@[((get_current_id g),(current_player g))];
-	   last_move= Check
+  { g with players = (List.tl g.players)@
+    [((get_current_id g),(current_player g))];
+	  last_move= Check
   }
 
 
@@ -222,7 +222,8 @@ let make_game () =
   }
 
 
-(* Returns the ID of the player that won the round and the best hand. *)
+(* Returns a pair of the ID of the player that won the round and the best
+* hand. Helper function for winner_to_string. *)
 let winner (g:game) =
   let p1 = snd (List.hd g.players) in
   let h1 = determine_best_hand p1.cards in
@@ -233,5 +234,5 @@ let winner (g:game) =
 
 (* Returns a string of the best hand and the ID of the player that has it. *)
 let winner_to_string (g: game) =
-    (fst (winner g) ^ "won with the hand:" ^ "hand goes here" )
+    (fst (winner g) ^ "won with the hand:" ^ hand_to_string (snd (winner g)) )
 
