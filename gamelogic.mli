@@ -32,3 +32,8 @@ val determine_best_hand : card list -> hand
 * Returns the hand that is better. What to do if the hands are the same? *)
 val compare_hands : hand -> hand -> hand
 
+(* Convert a hand to a string representation, displaying the five cards
+* that make up the hand - hand should have at least 5 cards
+* but function will accept an input of any amount of cards *)
+val hand_to_string : hand -> string
+

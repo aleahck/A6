@@ -19,47 +19,50 @@ type hand =
 
 (* insertion sort for sorting by a cards value
 * useful for sorting lists of cards *)
-let rec insertion_sort (l:'a list) : 'a list =
+let rec insertion_sort (l:card list) : card list =
   match l with
   | [] -> []
   | h::t -> insert h (insertion_sort t)
   and insert elem lst =
   match lst with
-| [] -> [elem]
-| h1::t1 -> if (val_of_card elem) < (val_of_card h1) then elem::h1::t1
+  | [] -> [elem]
+  | h1::t1 -> if (val_of_card elem) > (val_of_card h1) then elem::h1::t1
               else h1::insert elem t1
 
 (* insertion sort for sorting by a cards SUIT useful for sorting lists of cards
 * Suit order is Spades > Clubs > Diamonds > Hearts *
 * TEST THIS *)
-let rec insertion_sort_suit (l:'a list) : 'a list =
-match l with
-| [] -> []
-| h::t -> insert h (insertion_sort t)
-and insert elem lst =
-match lst with
-| [] -> [elem]
-| h1::t1 -> if (suit_of_card elem) < (suit_of_card h1) then elem::h1::t1
+let rec insertion_sort_suit (l:card list) : card list =
+  match l with
+  | [] -> []
+  | h::t -> insert h (insertion_sort t)
+  and insert elem lst =
+  match lst with
+  | [] -> [elem]
+  | h1::t1 -> if (suit_of_card elem) < (suit_of_card h1) then elem::h1::t1
             else h1::insert elem t1
 
 (* converts a hand to a card list *)
 let hand_to_card_list (h:hand) : card list =
-match h with
-| HighCard clist -> clist
-| Pair clist -> clist
-| TwoPair clist -> clist
-| Triple clist -> clist
-| Straight clist -> clist
-| Flush clist -> clist
-| FullHouse clist -> clist
-| Quads clist -> clist
-| StraightFlush clist -> clist
-| RoyalFlush clist -> clist
+  match h with
+  | HighCard clist -> clist
+  | Pair clist -> clist
+  | TwoPair clist -> clist
+  | Triple clist -> clist
+  | Straight clist -> clist
+  | Flush clist -> clist
+  | FullHouse clist -> clist
+  | Quads clist -> clist
+  | StraightFlush clist -> clist
+  | RoyalFlush clist -> clist
 
 (* returns the suit that occurs most frequently in the card list
 * and the number of times it occurs as a pair
-* if more than one suit occurs the same amount of times, one
-* is chosen randomly *)
+* if more than one suit occurs the same amount of times, the
+return does not matter, since this function is only used for
+finding flushes, and since we are looking for flushes in a
+maximum of 7 cards, if more than one suit does occur the same
+amount of times, this means there cannot possibly be a flush *)
 let most_common_suit (c:card list) : suit * int =
 let rec loop clist h d cl s =
   match clist with
@@ -90,6 +93,7 @@ let rec loop clist acc =
 in loop c 0
 
 (*check if a card list contains a straight flush*)
+(* Does not work *)
 let straight_flush_check (c:card list) : bool =
 let s = fst (most_common_suit c) in
 let rec loop clist acc =
@@ -97,7 +101,7 @@ let rec loop clist acc =
   | h1::h2::t -> if suit_of_card h1 = s && suit_of_card h2 = s
                     && one_step_below h2 h1 || (suit_of_card h1 = s &&
                     val_of_card h1 = value_of_string "A" &&
-                    let five = 
+                    let five =
                       card_of_string ("5 "^suit_to_string (suit_of_card h1)) in
                     List.mem five clist)
                  then loop (h2::t) (acc + 1)
@@ -134,7 +138,7 @@ let straight_check (c:card list) : bool =
     match (insertion_sort clist) with
     | h1::h2::t -> if one_step_below h2 h1 ||
                       (val_of_card h1 = value_of_string "A" &&
-                       List.mem (value_of_string "5") 
+                       List.mem (value_of_string "5")
                                 (List.map val_of_card clist))
                    then loop (h2::t) (acc + 1)
                    else loop (h2::t) acc
@@ -190,16 +194,15 @@ let rec compare_high_card (h1:card list) (h2:card list) : card list =
                          else if (val_of_card x1) < (val_of_card x2) then h2
                          else compare_high_card xs1 xs2
 
-(*Pair comparison*)
-
-(* returns the card value of the pair in the hand that contains a pair *)
+(* returns the card value of the pair in the hand that contains a pair
+* card list h is guaranteed to contain at least a pair *)
 let rec value_of_pair (h:card list) : value =
   match h with
-  | [] -> failwith "Hand does not contain a pair"
-  | hd::[] -> failwith "Hand does not contain a pair"
   | h1::h2::t -> if same_value h1 h2 then val_of_card h1
                  else value_of_pair (h2::t)
+  | _ -> failwith "violated precondition"
 
+(*Pair comparison - returns which hand is better*)
 let compare_pair (h1:card list) (h2:card list) : card list =
   let v1 = value_of_pair (insertion_sort h1) in
     let v2 = value_of_pair (insertion_sort h2) in
@@ -236,15 +239,14 @@ let compare_two_pair (h1:card list) (h2:card list) : card list =
               else compare_high_card [x1] [x2]
             in loop h1 h2
 
-(* Triple comparison *)
+(* Triple comparison *
+* card list h must be known to guarantee at least 3 cards with the same value*)
 let rec value_of_triple (h:card list) : value =
   match h with
-  | [] -> failwith "Hand does not contain a triple"
-  | hd::[] -> failwith "Hand does not contain a triple"
-  | h1::h2::[] -> failwith "Hand does not contain a triple"
   | h1::h2::h3::t -> if (same_value h1 h2) && (same_value h2 h3)
                      then val_of_card h1
                      else value_of_triple (h2::h3::t)
+  | _ -> failwith "violated precondition"
 
 let compare_triple (h1:card list) (h2:card list) : card list =
   let v1 = value_of_triple (insertion_sort h1) in
@@ -336,7 +338,7 @@ let rec compare_royal_flush (h1:card list) (h2:card list) : card list =
 * the 2 from a player's hand and the 5 from the board.
 * It could be fewer than seven cards for AI *)
 let determine_best_hand (c:card list) : hand =
-  if royal_flush_check c then
+  if royal_flush_check c then (*checked*)
     let s = fst(most_common_suit c) in
     let rec loop c2 =
       match (insertion_sort_suit (insertion_sort c2)) with
@@ -459,3 +461,27 @@ let compare_hands (h1:hand) (h2:hand) : hand =
                          (hand_to_card_list h1) (hand_to_card_list h2))
   | RoyalFlush (_) -> determine_best_hand (compare_royal_flush
                       (hand_to_card_list h1) (hand_to_card_list h2))
+
+(*helper that returns the string representation of a card list
+* given the hand type as a string argument *)
+let hand_to_string_helper (clist:card list) (s:string) : string =
+  let s1 = s^ " of " in
+  let rec loop cards acc =
+    match (insertion_sort cards) with
+    | [] -> acc
+    | h::t -> if acc = "" then loop t acc^card_to_string h
+              else loop t acc^" and "^card_to_string h
+  in s1^loop clist ""
+
+let hand_to_string (h:hand) : string =
+match h with
+  | HighCard clist -> hand_to_string_helper clist "HighCard"
+  | Pair clist -> hand_to_string_helper clist "Pair"
+  | TwoPair clist -> hand_to_string_helper clist "TwoPair"
+  | Triple clist -> hand_to_string_helper clist "Triple"
+  | Straight clist -> hand_to_string_helper clist "Straight"
+  | Flush clist -> hand_to_string_helper clist "Flush"
+  | FullHouse clist -> hand_to_string_helper clist "Full House"
+  | Quads clist -> hand_to_string_helper clist "Quads"
+  | StraightFlush clist -> hand_to_string_helper clist "StraightFlush"
+  | RoyalFlush clist -> hand_to_string_helper clist "RoyalFlush"
