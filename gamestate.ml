@@ -48,7 +48,7 @@ let do_player_raise (g:game) (p:player) (i: int)=
 
 let do_raise (g:game) (i:int)=
   let new_player= do_player_raise g (current_player g) i in
-  let p_id = get_player_id g in
+  let p_id = get_current_id g in
   let new_players= List.tl (g.players)@[(p_id,new_player)] in
   let new_pot= g.pot+ (g.bet-(current_player g).amount_in)+i in
   {flop= g.flop;
