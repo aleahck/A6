@@ -177,17 +177,20 @@ let rec string_of_plist lst acc =
       (string_of_plist t acc2)
     | [] -> acc
 
-(* Returns the string of the flop, bet and pot fields of the game state. *)
-let game_to_string (g:game) =
-  "The flop is: " ^ (string_of_clist g.flop "") ^ "\n" ^
-  "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
-  "The pot is: " ^ (string_of_int g.pot) ^ "\n"
 
-(* Returns the string of the stake, cards and bet of the player. *)
+(* Returns the string of the stake, cards and bet of the player.
+* Helper function for game_to_string. *)
 let player_to_string (p:player) =
   "Your stake is: " ^ (string_of_int p.stake) ^ "\n" ^
   "Your cards are: " ^ (string_of_clist p.cards "") ^ "\n" ^
   "You have bet: " ^ (string_of_int p.amount_in) ^ "\n"
+
+(* Returns the string of the flop, bet and pot fields of the game state. *)
+let game_to_string (g:game) =
+  "The flop is: " ^ (string_of_clist g.flop "") ^ "\n" ^
+  "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
+  "The pot is: " ^ (string_of_int g.pot) ^ "\n" ^
+  player_to_string (List.assoc "You" g.players)
 
 
 (* Only works for 2 players; only ends the hand instead of continuing hand
