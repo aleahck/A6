@@ -1,10 +1,14 @@
 open AI
 open Gamestate
 
-type validity= Valid of game| Invalid
 
+(*gamestage represents the parts of a hand as determined by the number of cards
+*on the table. Initial will be before any cards are out, Flop will be when 3
+*cards are out, Turn when 4 and River when 5.*)
 type gamestage= Initial | Flop | Turn | River 
 
+(*[game_stage g] takes in a game [g] and returns a gamestage determined by how
+*many cards have are in [g.flop]*)
 let game_stage g= match g.flop with 
     |a::b::c::d::e::[]-> River
     |a::b::c::d::[]-> Turn
@@ -31,8 +35,8 @@ let second_word command=
   String.trim untrimmed
 
   
-(*Takes in a game, performs an action, and returns some of a modified game or 
-*None if the command isn't valid*)
+(*[choose_action g] will perform a single player move in a round of betting.
+*The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
   print_string (game_to_string g);
   if (out_of_money g) then g  
@@ -77,6 +81,9 @@ and play_raise g second= let num= int_of_string second in
 			     then choose_action (turn (do_raise g num))
 					 else (print_string "Invalid input"; g)
 
+(*[play_game g] takes in a game [g] and deals cards in a hand, begins rounds 
+*of betting, and launches new hands when appropriate. play_game will terminate 
+*when someone wins or exits*)
 let rec play_game  (g: game)= 
   match game_stage g with
   |Initial-> let new_h= fold g in
@@ -94,6 +101,8 @@ let rec play_game  (g: game)=
 	   play_game (fold ggame)
 	   	 
  
+(*The main function launches the game, creates a new game, and initializes the
+*first hand*)
 let _= 
   let new_game= make_game () in
   let new_h= fold new_game in 

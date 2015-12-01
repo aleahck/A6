@@ -14,7 +14,7 @@ let call_amount g =
   let i,ai = List.hd g.players in
   g.bet - ai.amount_in
 
-let point_standard = function
+let point_standard g = match game_stage g with
   | Initial -> 20.
   | Flop    -> 40.
   | Turn    -> 60.
@@ -24,7 +24,7 @@ let same_suit_bonus  = function
   | h1::h2::[] -> if same_suit h1 h2 then 10. else 0.
   | _          -> 0.
 
-let card_bonus c = match val_of_card c with
+let card_bonus c = match value_to_string (val_of_card c) with
   | "2"  -> 0.
   | "3"  -> 1.
   | "4"  -> 2.
@@ -38,8 +38,9 @@ let card_bonus c = match val_of_card c with
   | "Q"  -> 10.
   | "K"  -> 11.
   | "A"  -> 12.
+  | _    -> failwith "?"
 
-let cards_bonus = function
+let rec cards_bonus = function
   | [] -> 0.
   | h::t -> (card_bonus h) +. (cards_bonus t)
 
@@ -59,12 +60,12 @@ let pot_odds g =
   let bet_needed = float_of_int (call_amount g) in
   (float_of_int g.pot) /. bet_needed
 
-let hand_points_intial g =
-  let i, ai = List.hd players in
+let hand_points_initial g =
+  let _, ai = List.hd g.players in
   (cards_bonus ai.cards) +. (same_suit_bonus ai.cards)
 
 let hand_points_midgame g =
-  let i, ai = List.hd players in
+  let _, ai = List.hd g.players in
   (best_hand_bonus (ai.cards @ g.flop))
   
 let hand_points g = match game_stage g with
@@ -82,17 +83,13 @@ let turn g =
   let points_needed = (point_standard g) /. (pot_odds g) in
   let diff_in_points = int_of_float (modified_points -. points_needed) in
   if diff_in_points <= 0 && (g.last_move = Check || g.last_move = Deal) then
-    print_endline "AI checks" ;
-    check g
+    (print_endline "AI checks" ; check g)
   else if diff_in_points <= 0 then
-    print_endline "AI folds" ;
-    fold g
-  else if diff_in_point > 10 then (*not sure when he can raise*)
-    let amount = floor_bet_to_all_in (diff_in_points - (call_amount g)) in
-    Printf.printf "AI raise %d\n" amount ;
-    do_raise g amount
+    (print_endline "AI folds" ; fold g)
+  else if diff_in_points > 10 then (*not sure when he can raise*)
+    let amount = floor_bet_to_all_in (diff_in_points - (call_amount g)) g in
+    (Printf.printf "AI raise %d\n" amount ; do_raise g amount)
   else
-    print_endline "AI calls" ;
-    call g
+    (print_endline "AI calls" ; call g)
 
 
