@@ -56,7 +56,8 @@ let do_raise (g:game) (i:int)=
    pot= new_pot;
    players= new_players;
    deck= g.deck;
-   first_better= g.first_better
+   first_better= g.first_better;
+   last_move= Raise i
   }
 
 let is_valid_bet (i:int) (g:game) =
@@ -67,11 +68,13 @@ let is_valid_bet (i:int) (g:game) =
 
 
 let call (g:game) =
-  do_raise g 0
+  {(do_raise g 0) with last_move= Call}
 
 
 let check (g:game) =
-  { g with players = (List.tl g.players)@[(get_current_id),(current_player g)] }
+  { g with players = (List.tl g.players)@[(get_current_id),(current_player g)];
+	   last_move= Check
+  }
 
 
 (* Helper for fold and dealer. Creates new hand on the turn a player folds. *)
@@ -91,7 +94,8 @@ let new_hand (g:game) =
      pot=0;
      players= [(fst_id,fst_player);(snd_id,snd)player)];
      deck= Deck.rand_deck();
-     first_better= (List.tl g.first_better)@ [List.hd g.first_better]
+     first_better= (List.tl g.first_better)@ [List.hd g.first_better];
+     last_move= Deal
   } in deal_two undelt
   else
     let undelt=
@@ -100,7 +104,9 @@ let new_hand (g:game) =
      pot = 0;
      players = [(snd_id,snd_player);(fst_id,fst_player)];
      deck = Deck.rand_deck();
-     first_better = (List.tl g.first_better)@[List.hd g.first_better] } in
+     first_better = (List.tl g.first_better)@[List.hd g.first_better];
+     last_move= Deal
+    } in
      deal_two undelt
 
 
@@ -140,7 +146,9 @@ let deal_two (g:game) =
   p2.cards <- Some (fst (d2)) ;
   { g with
     players = [(fst (List.hd g.players), p1) ; (fst (List.tl g.players), p2)] ;
-    deck = snd d2 }
+    deck = snd d2;
+    last_move= Deal
+  }
 
 
 (*[deal_two g] takes in a game and returns a pair containing the deck from
@@ -162,7 +170,9 @@ let make_game () =
   pot = 0;
   players = [(1,new_player());(2,new_player())];
   deck = Deck.rand_deck();
-  first_better = [1;2] }
+  first_better = [1;2];
+  last_move= Deal
+  }
 
 
 (* Turns card list into string. Helper function for to_string functions *)
