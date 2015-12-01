@@ -41,7 +41,10 @@ let add1_flop (g:game) =
 (* Adds 3 cards to the flop (for new hands). *)
 let add3_flop (g:game) =
   let d1 = top3_cards g.deck in
-  {g with deck = snd d1; flop = fst d1}
+  let new_first = (if g.first_better = fst (List.hd g.players)
+    then List.rev g.players
+    else g.players)
+  {g with deck = snd d1; flop = fst d1; players = new_first}
 
 
 (*[do_player_bet p i] removes [i] from [p]'s stake and adds it to [p]'s
@@ -83,9 +86,10 @@ let do_raise (g:game) (i:int)=
   let new_player= do_player_raise g (current_player g) i in
   let p_id = get_current_id g in
   let new_players= List.tl (g.players)@[(p_id,new_player)] in
+  let new_pot = g.pot+(g.bet - (current_player g).amount_in) + i in
   {flop= g.flop;
    bet= g.bet+i;
-   pot= g.pot+i;
+   pot= new_pot;
    players= new_players;
    deck= g.deck;
    first_better= g.first_better;
