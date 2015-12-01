@@ -42,7 +42,7 @@ val is_valid_call: game-> bool
 
 val is_valid_check: game-> bool
 
-val out_of_money: game-> bool
+val end_betting: game-> bool
 
 val add1_flop: game-> game
 
