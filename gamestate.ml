@@ -5,7 +5,7 @@ open Gamelogic
 
 type player = {
     stake: int;
-    mutable cards: card list option;
+    mutable cards: card list;
     amount_in: int
   }
 
@@ -15,13 +15,16 @@ let LITTLE_BLIND=1
 
 type id = int
 
+type move = Call | Raise of int | Check | Fold | Deal
+
 type game= {
     flop: card list;
     bet: int;
     pot: int;
     players: (id * player) list;
     deck: deck;
-    first_better: id list
+    first_better: id list;
+    last_move: move
   }
 
 let current_player (g:game) = snd (List.hd g.players)
@@ -74,7 +77,7 @@ let check (g:game) =
 (* Helper for fold and dealer. Creates new hand on the turn a player folds. *)
 let new_hand (g:game) =
   let fst_player1= snd (List.hd g.players) in
-  let fst_player= fst_player1 with stake=fst_player1-BIG_BLIND
+  let fst_player= {fst_player1 with stake=fst_player1.stake-BIG_BLIND}
   let fst_id= fst (List.hd g.players) in
   let snd_player_original = snd (List.nth g.players 1) in
   let snd_id= fst (List.nth g.players 1) in
@@ -100,6 +103,7 @@ let new_hand (g:game) =
      first_better = (List.tl g.first_better)@[List.hd g.first_better] } in
      deal_two undelt
 
+
 (* Only works for 2 players; only ends the hand instead of continuing hand
   without player who folded. *)
 let fold (g:game) =
@@ -109,12 +113,12 @@ let fold (g:game) =
 (* Only works for 2 players. For multiple players, must be able to take player
   out of queue and continue game. Also need to work on blinds values. *)
 let dealer (g:game) =
-  let big_blind = List.hd g.first_better in
-  let small_blind = List.nth g.first_better 1 in
+  let big = fst (List.hd g.players) in
+  let small = fst (List.nth g.first_better 1 in
   if !(List.for_all
     (fun x -> if x = big_blind then x.stake > 2 (* arbitrary *)
       else if x = small_blind then x.stake > 1 (* arbitrary *)
-      else x.stake > 0)
+    )
     (g.players)) then None else
   Some (new_hand g)
 
@@ -122,7 +126,7 @@ let dealer (g:game) =
 (* Helper function for new_game. *)
 let new_player () =
   {stake = 200; (* arbitrary *)
-  cards = None
+  cards = (card_of_string "A H", card_of_string "A H");
   amount_in = 0}
 
 
