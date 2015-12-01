@@ -92,7 +92,8 @@ let do_raise (g:game) (i:int)=
 
 (* Changes the last move to Call and returns the new gamestate. *)
 let call (g:game) =
-  { (do_raise g 0) with last_move= Call }
+  let new_game = do_raise g 0 in
+  { new_game with last_move= Call }
 
 (* Changes the last move to Check  *)
 let check (g:game) =
