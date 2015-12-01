@@ -72,7 +72,7 @@ let hand_points g = match game_stage g with
   | Initial -> hand_points_initial g
   | _       -> hand_points_midgame g
 
-let rand_multiplier () = Random.float 2.
+let rand_multiplier () = Random.self_init () ; Random.float 2.
 
 let floor_bet_to_all_in bet g =
   let i,ai = List.hd g.players in
@@ -90,7 +90,7 @@ let turn g =
   else if diff_in_points <= 10 then
     (print_endline "AI calls" ; call g)
   else (*not sure when he can raise*)
-    let amount = floor_bet_to_all_in (diff_in_points - (call_amount g)) g in
+    let amount = floor_bet_to_all_in diff_in_points g in
     (Printf.printf "AI raise %d\n" amount ; do_raise g amount)
 
 
