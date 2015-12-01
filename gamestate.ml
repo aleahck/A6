@@ -53,9 +53,11 @@ let do_player_raise (g:game) (p:player) (i: int)=
    amount_in= p.amount_in + (difference+i)
   }
 
-(* Returns false if any player in the game is out of money. *)
-let out_of_money (g:game) =
-  not (List.for_all (fun x -> (snd x).stake > 0) g.players)
+(* Returns false if any player in the game is out of money or if the last
+* move is Call. *)
+let end_betting (g:game) =
+  not (List.for_all (fun x -> (snd x).stake > 0) g.players) ||
+  g.last_move = Call
 
 
 (* Returns false if the current player is unable to call.*)
