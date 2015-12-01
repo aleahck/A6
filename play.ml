@@ -69,12 +69,13 @@ let rec choose_action (g:game)=
 			      "This round of betting has concluded\n";g 
 		  |"fold"-> fold g
 		  |"exit"-> exit 0
-		  |_-> (print_string "Invalid input"; choose_action g) end
+		  |_-> (print_string "Invalid input\n"; choose_action g) end
     |Fold-> failwith "a new hand should have started from AI"
     |Deal-> begin match first with
 		  |"raise"-> let raised= try play_raise g second with
 			       |Failure "int_of_string"->print_string
-							   "Invalid input"; g in
+							   "Invalid input\n"; 
+							 g in
 			     choose_action raised
 		  |"check"-> choose_action (turn (check g))
 		  |"fold"-> fold g
@@ -91,16 +92,24 @@ and play_raise g second= let num= int_of_string second in
 *when someone wins or exits*)
 let rec play_game  (g: game)= 
   match game_stage g with
-  |Initial-> let betting=choose_action g in
+  |Initial-> let betting= if (fst (List.hd (g.players))= "You")
+	       then choose_action g 
+	       else choose_action (turn g) in
 	     play_game (add3_flop betting)
-  |Flop|Turn-> let betting= choose_action g in
+  |Flop|Turn-> let dealt= {g with last_move= Deal} in
+	       let betting= if (fst (List.hd (dealt.players))= "You")
+	       then choose_action dealt 
+	       else choose_action (turn dealt) in
 	       play_game (add1_flop betting)
-  |River-> let betting= choose_action g in
-	   let the_winner= fst (winner g) in
-	   print_string (winner_to_string g);
-	   let new_ps= if (the_winner= get_current_id g)
-		       then List.rev g.players
-		       else g.players in
+  |River-> let dealt= {g with last_move= Deal} in
+	   let betting= if (fst (List.hd (dealt.players))= "You")
+	       then choose_action dealt 
+	       else choose_action (turn dealt) in
+	   let the_winner= fst (winner dealt) in
+	   print_string (winner_to_string dealt);
+	   let new_ps= if (the_winner= get_current_id dealt)
+		       then List.rev dealt.players
+		       else dealt.players in
 	   let ggame= {betting with players= new_ps} in
 	   play_game (fold ggame)
 	   	 
@@ -108,9 +117,9 @@ let rec play_game  (g: game)=
 (*The main function launches the game, creates a new game, and initializes the
 *first hand*)
 let _= 
-  print_string "Welcome to Texas Holdem! The game has begun. You can call, 
-		raise by a number, fold, or check when it's your turn. Type 
-		exit to quit the game.\n";
+  print_string ("\nWelcome to Texas Holdem! The game has begun.\n"^
+	       "You can call,raise by a number, fold, or check"^
+		"when it's your turn.\n Type exit to quit the game.\n");
   let new_game= make_game () in
   let new_h= fold new_game in 
   play_game new_h
