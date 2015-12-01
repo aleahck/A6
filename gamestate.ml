@@ -41,9 +41,9 @@ let add1_flop (g:game) =
 (* Adds 3 cards to the flop (for new hands). *)
 let add3_flop (g:game) =
   let d1 = top3_cards g.deck in
-  let new_first = (if g.first_better = fst (List.hd g.players)
+  let new_first = (if List.hd g.first_better = fst (List.hd g.players)
     then List.rev g.players
-    else g.players)
+    else g.players) in
   {g with deck = snd d1; flop = fst d1; players = new_first}
 
 
