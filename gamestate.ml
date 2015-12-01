@@ -159,8 +159,12 @@ let new_hand (g:game) =
   else
     let undelt2 =
     undelt
-      ([(snd_id,{snd_player with stake = snd_player.stake - big_blind});
-      (fst_id,{fst_player with stake = fst_player.stake - little_blind})])
+      ([(snd_id,{snd_player with
+        stake = snd_player.stake - big_blind;
+        amount_in = snd_player.amount_in + big_blind});
+      (fst_id,{fst_player with
+        stake = fst_player.stake - little_blind;
+        amount_in = fst_player.amount_in + little_blind})])
       g
     in
     deal_two undelt2
@@ -208,7 +212,7 @@ let fold (g:game) =
   let new_h = new_hand g in
   let continue = List.for_all (fun x -> (snd x).stake >=0) new_h.players in
   if continue
-    then (print_string ("A new hand has begun! \n");new_h)
+    then (print_string ("\n \nA new hand has begun! \n");new_h)
   else (if (current_player new_h).stake >=0 then
         ((Printf.printf "%s wins!\n" (List.hd new_h.first_better)); exit 0)
         else
