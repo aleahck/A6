@@ -86,8 +86,7 @@ and play_raise g second= let num= int_of_string second in
 *when someone wins or exits*)
 let rec play_game  (g: game)= 
   match game_stage g with
-  |Initial-> let new_h= fold g in
-	     let betting=choose_action new_h in
+  |Initial-> let betting=choose_action g in
 	     play_game (add3_flop betting)
   |Flop|Turn-> let betting= choose_action g in
 	       play_game (add1_flop betting)
@@ -104,8 +103,10 @@ let rec play_game  (g: game)=
 (*The main function launches the game, creates a new game, and initializes the
 *first hand*)
 let _= 
+  print_string "Welcome to Texas Holdem! The game has begun. You can call, 
+		raise by a number, fold, or check when it's your turn. Type 
+		exit to quit the game.\n";
   let new_game= make_game () in
   let new_h= fold new_game in 
-  print_string "TODO";
   play_game new_h
   
