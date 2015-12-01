@@ -196,8 +196,8 @@ let player_to_string (p:player) =
 let game_to_string (g:game) =
   "The flop is: " ^ (string_of_clist g.flop "") ^ "\n" ^
   "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
-  "The pot is: " ^ (string_of_int g.pot) ^ "\n" ^
-  player_to_string (List.assoc "You" g.players)
+  "The pot is: " ^ (string_of_int g.pot) ^ "\n" (* ^
+  player_to_string (List.assoc "You" g.players) *)
 
 
 (* Only works for 2 players; only ends the hand instead of continuing hand
