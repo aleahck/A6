@@ -109,18 +109,6 @@ let check (g:game) =
   }
 
 
-(* Helper function for new_hand. *)
-let undelt pfield g =
-  {flop= [];
-     bet=0;
-     pot = big_blind+little_blind;
-     players= pfield;
-     deck= rand_deck();
-     first_better= (List.tl g.first_better)@ [List.hd g.first_better];
-     last_move= Deal
-  }
-
-
 (* Deals two cards to each player and returns the gamestate with the updated
 * deck and player records. *)
 let deal_two (g:game) =
@@ -136,6 +124,16 @@ let deal_two (g:game) =
     last_move= Deal
   }
 
+(* Helper function for new_hand. *)
+let undelt pfield g =
+  {flop= [];
+     bet=0;
+     pot = big_blind+little_blind;
+     players= pfield;
+     deck= rand_deck();
+     first_better= (List.tl g.first_better)@ [List.hd g.first_better];
+     last_move= Deal
+  }
 
 (* Helper for fold and dealer. Creates new hand on the turn a player folds. *)
 let new_hand (g:game) =
@@ -149,8 +147,12 @@ let new_hand (g:game) =
   if (new_start=fst_id) then
     let undelt1 =
     undelt
-      ([(fst_id,{fst_player with stake = fst_player.stake - big_blind});
-      (snd_id,{snd_player with stake = snd_player.stake - little_blind})])
+      ([(fst_id,{fst_player with
+        stake = fst_player.stake - big_blind;
+        amount_in = fst_player.amount_in + big_blind});
+      (snd_id,{snd_player with
+        stake = snd_player.stake - little_blind;
+        amount_in = snd_player.amount_in + little_blind})])
       g
     in
     deal_two undelt1
@@ -196,8 +198,8 @@ let player_to_string (p:player) =
 let game_to_string (g:game) =
   "The flop is: " ^ (string_of_clist g.flop "") ^ "\n" ^
   "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
-  "The pot is: " ^ (string_of_int g.pot) ^ "\n" (* ^
-  player_to_string (List.assoc "You" g.players) *)
+  "The pot is: " ^ (string_of_int g.pot) ^ "\n" ^
+  player_to_string (List.assoc "You" g.players)
 
 
 (* Only works for 2 players; only ends the hand instead of continuing hand
@@ -206,7 +208,7 @@ let fold (g:game) =
   let new_h = new_hand g in
   let continue = List.for_all (fun x -> (snd x).stake >=0) new_h.players in
   if continue
-    then (print_string ("A new hand has begun \n" ^ game_to_string new_h);new_h)
+    then (print_string ("A new hand has begun! \n");new_h)
   else (if (current_player new_h).stake >=0 then
         ((Printf.printf "%s wins!\n" (List.hd new_h.first_better)); exit 0)
         else
