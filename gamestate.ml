@@ -9,9 +9,9 @@ type player = {
     amount_in: int
   }
 
-let BIG_BLIND= 2
+let big_blind = 2
 
-let LITTLE_BLIND=1
+let little_blind =1
 
 type id = string
 
@@ -40,8 +40,7 @@ let add1_flop (g:game) =
 (* Adds 3 cards to the flop (for new hands). *)
 let add3_flop (g:game) =
   let d1 = top3_cards g.deck in
-  let old_flop = g.flop in
-  {g with deck = snd d1; flop = [fst d1]}
+  {g with deck = snd d1; flop = fst d1}
 
 
 (*[do_player_bet p i] removes [i] from [p]'s stake and adds it to [p]'s
@@ -97,16 +96,16 @@ let call (g:game) =
 
 (* Check *)
 let check (g:game) =
-  { g with players = (List.tl g.players)@[(get_current_id),(current_player g)];
+  { g with players = (List.tl g.players)@[((get_current_id g),(current_player g))];
 	   last_move= Check
   }
 
 
 (* Helper function for new_hand. *)
-let undelt p pfield =
-  {p with flop= [];
+let undelt pfield g =
+  {flop= [];
      bet=0;
-     pot = BIG_BLIND+LITTLE_BLIND;
+     pot = big_blind+little_blind;
      players= pfield;
      deck= rand_deck();
      first_better= (List.tl g.first_better)@ [List.hd g.first_better];
@@ -121,8 +120,8 @@ let deal_two (g:game) =
   let d2 = top2_cards (snd d1) in
   let p1 = snd (List.hd g.players) in
   let p2 = snd (List.nth g.players 1) in
-  p1.cards <- Some (fst (d1)) ;
-  p2.cards <- Some (fst (d2)) ;
+  p1.cards <- fst (d1) ;
+  p2.cards <- fst (d2) ;
   { g with
     players = [(fst(List.hd g.players),p1) ; (fst(List.nth g.players 1),p2)] ;
     deck = snd d2;
@@ -133,7 +132,7 @@ let deal_two (g:game) =
 (* Helper for fold and dealer. Creates new hand on the turn a player folds. *)
 let new_hand (g:game) =
   let fst_player1= snd (List.hd g.players) in
-  let fst_player= {fst_player1 with stake=fst_player1.stake}
+  let fst_player= {fst_player1 with stake=fst_player1.stake} in
   let fst_id= fst (List.hd g.players) in
   let snd_player1 = snd (List.nth g.players 1) in
   let snd_id= fst (List.nth g.players 1) in
@@ -141,50 +140,20 @@ let new_hand (g:game) =
   let new_start= List.nth g.first_better 1 in
   if (new_start=fst_id) then
     let undelt1 =
-    undelt fst_player
-      ([(fst_id,{fst_player with stake = fst_player.stake - BIG_BLIND});
-      (snd_id,{snd_player with stake = snd_player.stake - LITTLE_BLIND})])
+    undelt
+      ([(fst_id,{fst_player with stake = fst_player.stake - big_blind});
+      (snd_id,{snd_player with stake = snd_player.stake - little_blind})])
+      g
     in
     deal_two undelt1
   else
     let undelt2 =
-    undelt snd_player
-      ([(snd_id,{snd_player with stake = snd_player.stake - BIG_BLIND});
-      (fst_id,{fst_player with stake = fst_player.stake - LITTLE_BLIND})])
+    undelt
+      ([(snd_id,{snd_player with stake = snd_player.stake - big_blind});
+      (fst_id,{fst_player with stake = fst_player.stake - little_blind})])
+      g
     in
     deal_two undelt2
-
-
-(* Only works for 2 players; only ends the hand instead of continuing hand
-  without player who folded. *)
-let fold (g:game) =
-  let new_h = new_hand g in
-  let continue = List.for_all (fun x -> (snd x).stake >=0) new_h.players in
-  if continue
-    then print_string "A new hand has begun \n" ^ game_to_string new_h ; new_h
-  else (if (current_player new_h).stake >=0 then
-        Printf.printf "%s wins!\n" (List.hd new_h.first_better; exit 0)
-        else Printf.printf "%s wins!\n" (List.nth new_h.first_better 1; exit 0))
-
-
-(* Helper function for new_game. *)
-let new_player () =
-  {stake = 200; (* arbitrary *)
-  cards = (card_of_string "A H", card_of_string "A H");
-  amount_in = 0}
-
-(* Returns a new game state with re-initialized fields. *)
-let make_game () =
-  let new_player1= new_player () in
-  let new_player2= new_player () in
-  {flop = [];
-  bet = 0;
-  pot = 0;
-  players = [("You",new_player());("AI",new_player())];
-  deck = rand_deck();
-  first_better = [1;2];
-  last_move= Deal
-  }
 
 
 (* Turns card list into string. Helper function for to_string functions *)
@@ -216,22 +185,53 @@ let game_to_string (g:game) =
 (* Returns the string of the stake, cards and bet of the player. *)
 let player_to_string (p:player) =
   "Your stake is: " ^ (string_of_int p.stake) ^ "\n" ^
-  "Your cards are: " ^ (string_of_clist p.cards) ^ "\n" ^
-  "You have bet: " ^ (string_of_int p.amount_n) ^ "\n"
+  "Your cards are: " ^ (string_of_clist p.cards "") ^ "\n" ^
+  "You have bet: " ^ (string_of_int p.amount_in) ^ "\n"
 
 
-(* Returns the ID of the player that won the hand. *)
+(* Only works for 2 players; only ends the hand instead of continuing hand
+  without player who folded. *)
+let fold (g:game) =
+  let new_h = new_hand g in
+  let continue = List.for_all (fun x -> (snd x).stake >=0) new_h.players in
+  if continue
+    then (print_string ("A new hand has begun \n" ^ game_to_string new_h);new_h)
+  else (if (current_player new_h).stake >=0 then
+        ((Printf.printf "%s wins!\n" (List.hd new_h.first_better)); exit 0)
+        else
+        ((Printf.printf "%s wins!\n" (List.nth new_h.first_better 1)); exit 0))
+
+
+(* Helper function for new_game. *)
+let new_player () =
+  {stake = 200; (* arbitrary *)
+  cards = [card_of_string "A H"; card_of_string "A H"];
+  amount_in = 0}
+
+(* Returns a new game state with re-initialized fields. *)
+let make_game () =
+  let new_player1= new_player () in
+  let new_player2= new_player () in
+  {flop = [];
+  bet = 0;
+  pot = 0;
+  players = [("You",new_player1);("AI",new_player2)];
+  deck = rand_deck();
+  first_better = ["You";"AI"];
+  last_move= Deal
+  }
+
+
+(* Returns the ID of the player that won the round and the best hand. *)
 let winner (g:game) =
   let p1 = snd (List.hd g.players) in
   let h1 = determine_best_hand p1.cards in
   let p2 = snd (List.nth g.players 1) in
   let h2 = determine_best_hand p2.cards in
-  if (compare_hands h1 h2) = h1 then fst (List.hd g.players)
-  else fst (List.nth g.players 1)
+  if (compare_hands h1 h2) = h1 then (fst (List.hd g.players), h1)
+  else (fst (List.nth g.players 1), h2)
 
 (* Returns a string of the best hand and the ID of the player that has it. *)
 let winner_to_string (g: game) =
-    (winner g ^ "won with the hand:" ^ string_of_clist h1)
-  else
-    (winner g ^ "won with the hand:" ^ string_of_clist h2)
+    (fst (winner g) ^ "won with the hand:" ^ "hand goes here" )
 
