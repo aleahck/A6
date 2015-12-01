@@ -42,13 +42,13 @@ val is_valid_call: game-> bool
 
 val is_valid_check: game-> bool
 
-val out_of_money: game-> bool
+val end_betting: game-> bool
 
 val add1_flop: game-> game
 
 val add3_flop: game-> game
 
-val winner: game-> string*hand
+val winner: game-> string * hand
 
 val winner_to_string: game-> string
 
@@ -64,11 +64,11 @@ val call : game-> game
 
 (*Takes in a game. Moves to next player but does not change gamestate
 *otherwise*)
-val check : game->game
+val check : game-> game
 
 (*Takes in a game and ignores player that folds for rest of hand. When
 *implemented for only two players, this ends the hand*)
-val fold : game->game
+val fold : game-> game
 
 (*Creates a new game*)
 val make_game : unit-> game

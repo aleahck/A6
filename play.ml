@@ -1,10 +1,14 @@
 open AI
 open Gamestate
 
-type validity= Valid of game| Invalid
 
+(*gamestage represents the parts of a hand as determined by the number of cards
+*on the table. Initial will be before any cards are out, Flop will be when 3
+*cards are out, Turn when 4 and River when 5.*)
 type gamestage= Initial | Flop | Turn | River 
 
+(*[game_stage g] takes in a game [g] and returns a gamestage determined by how
+*many cards have are in [g.flop]*)
 let game_stage g= match g.flop with 
     |a::b::c::d::e::[]-> River
     |a::b::c::d::[]-> Turn
@@ -25,38 +29,42 @@ let first_word command=
 let second_word command= 
   let lower_trimmed= String.trim (String.lowercase command) in
   let space= try String.index lower_trimmed ' ' with 
-	       |Not_found-> failwith "No second word should be valid" in
+	       |Not_found-> failwith "nope" in
   let untrimmed= String.sub lower_trimmed space 
 			    ((String.length lower_trimmed)-space)in
   String.trim untrimmed
 
   
-(*Takes in a game, performs an action, and returns some of a modified game or 
-*None if the command isn't valid*)
+(*[choose_action g] will perform a single player move in a round of betting.
+*The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
   print_string (game_to_string g);
-  if (out_of_money g) then g  
+  if (end_betting g) then (print_string 
+			      "This round of betting has concluded\n";g)   
   else
-  (print_string "Enter a command";
+  (print_string "Enter a command:\n";
   let command= read_line () in
   let first= first_word command in
-  let second= second_word command in
+  let second= try (second_word command) with 
+	      |Failure "nope"-> "" in
   match g.last_move with 
-    |Call-> print_string "This round of betting has concluded\n";g 
+    |Call->failwith "Should have been caught in if"
     |Check->begin match first with
 		  |"check"-> check g
 		  |"raise"-> let raised= try play_raise g second with
-			       |Failure "int_of_string"->print_string
-							   "Invalid input"; g in
+			       |Failure "int_of_string"->(print_string
+							   "Invalid input\n"; 
+							 g) in
 			     choose_action raised
 		  |"fold"-> fold g
 		  |"exit"-> exit 0
-	          |_-> print_string "Invalid input"; choose_action g end
+	          |_-> print_string "Invalid input\n"; choose_action g end
     |Raise _-> begin match first with
 		  |"raise"-> let raised= try play_raise g second with
 			       |Failure "int_of_string"->print_string
-							   "Invalid input"; g in
-			     choose_action raised
+							   "Invalid input\n"; 
+							 g in
+			     choose_action (turn (raised))
 		  |"call"-> print_string 
 			      "This round of betting has concluded\n";g 
 		  |"fold"-> fold g
@@ -71,16 +79,19 @@ let rec choose_action (g:game)=
 		  |"check"-> choose_action (turn (check g))
 		  |"fold"-> fold g
 		  |"exit"-> exit 0 
-	          |_-> (print_string "Invalid input"; choose_action g )end)
+	          |_-> (print_string "Invalid input\n"; choose_action g )end)
 and play_raise g second= let num= int_of_string second in
 			     if (is_valid_raise num g) 
 			     then choose_action (turn (do_raise g num))
-					 else (print_string "Invalid input"; g)
+					 else (print_string "Invalid input\n";
+					       g)
 
+(*[play_game g] takes in a game [g] and deals cards in a hand, begins rounds 
+*of betting, and launches new hands when appropriate. play_game will terminate 
+*when someone wins or exits*)
 let rec play_game  (g: game)= 
   match game_stage g with
-  |Initial-> let new_h= fold g in
-	     let betting=choose_action new_h in
+  |Initial-> let betting=choose_action g in
 	     play_game (add3_flop betting)
   |Flop|Turn-> let betting= choose_action g in
 	       play_game (add1_flop betting)
@@ -94,9 +105,13 @@ let rec play_game  (g: game)=
 	   play_game (fold ggame)
 	   	 
  
+(*The main function launches the game, creates a new game, and initializes the
+*first hand*)
 let _= 
+  print_string "Welcome to Texas Holdem! The game has begun. You can call, 
+		raise by a number, fold, or check when it's your turn. Type 
+		exit to quit the game.\n";
   let new_game= make_game () in
   let new_h= fold new_game in 
-  print_string "TODO";
   play_game new_h
   

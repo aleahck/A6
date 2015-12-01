@@ -469,9 +469,9 @@ let hand_to_string_helper (clist:card list) (s:string) : string =
   let rec loop cards acc =
     match (insertion_sort cards) with
     | [] -> acc
-    | h::t -> if acc = "" then loop t acc^card_to_string h
-              else loop t acc^" and "^card_to_string h
-  in s1^loop clist ""
+    | h::t -> if acc = "" then loop t (acc^card_to_string h)
+              else loop t (acc^" and "^card_to_string h)
+  in s1^(loop clist "")
 
 let hand_to_string (h:hand) : string =
 match h with
