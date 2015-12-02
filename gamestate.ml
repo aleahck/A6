@@ -155,20 +155,20 @@ let new_hand (g:game) =
     then
       undelt
 	      ([(fst_id,{fst_player with
-  		    stake = fst_player.stake - big_blind;
-  		    amount_in = big_blind});
+  		    stake = fst_player.stake - little_blind;
+  		    amount_in = little_blind});
 	      (snd_id,{snd_player with
-  		    stake = snd_player.stake - little_blind;
-  	      amount_in = little_blind})])
+  		    stake = snd_player.stake - big_blind;
+  	      amount_in = big_blind})])
 	      g
     else
       undelt
 	      ([(snd_id,{snd_player with
-		      stake = snd_player.stake - big_blind;
-		      amount_in = big_blind});
+		      stake = snd_player.stake - little_blind;
+		      amount_in = little_blind});
 	      (fst_id,{fst_player with
-		      stake = fst_player.stake - little_blind;
-		      amount_in = little_blind})])
+		      stake = fst_player.stake - big_blind;
+		      amount_in = big_blind})])
 	      g
   in
     deal_two undealt1
