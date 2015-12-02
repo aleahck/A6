@@ -41,7 +41,7 @@ let add1_flop (g:game) =
 (* Adds 3 cards to the flop (for new hands). *)
 let add3_flop (g:game) =
   let d1 = top3_cards g.deck in
-  let new_first = (if List.hd g.first_better = fst (List.hd g.players)
+  let new_first = (if ((List.hd g.first_better) = fst (List.hd g.players))
     then List.rev g.players
     else g.players) in
   {g with deck = snd d1; flop = fst d1; players = new_first}
@@ -250,9 +250,9 @@ let make_game () =
 * hand. Helper function for winner_to_string. *)
 let winner (g:game) =
   let p1 = snd (List.hd g.players) in
-  let h1 = determine_best_hand p1.cards in
+  let h1 = determine_best_hand (p1.cards@g.flop) in
   let p2 = snd (List.nth g.players 1) in
-  let h2 = determine_best_hand p2.cards in
+  let h2 = determine_best_hand (p2.cards@g.flop) in
   if (compare_hands h1 h2) = h1 then (fst (List.hd g.players), h1)
   else (fst (List.nth g.players 1), h2)
 
