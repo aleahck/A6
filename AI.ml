@@ -75,8 +75,11 @@ let hand_points g = match game_stage g with
 let rand_multiplier () = Random.self_init () ; Random.float 2.
 
 let floor_bet_to_all_in bet g =
-  let i,ai = List.hd g.players in
-  if bet > ai.stake then ai.stake else bet
+  match g.players with
+  | (_,p1)::(_,p2)::t -> if bet > p1.stake || bet > p2.stake then
+                           if p1.stake > p2.stake then p2.stake else p1.stake
+                         else 
+                           bet
 
 let turn g =
   let modified_points = (rand_multiplier ()) *. (hand_points g) in
