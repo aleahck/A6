@@ -53,17 +53,17 @@ let rec choose_action (g:game)=
 		  |"check"->print_string ("\nThis round of betting has"^
 			      "concluded\n");check g
 		  |"raise"-> let raised= try play_raise g second with
-			       |Failure "int_of_string"->(print_string
-							   "Invalid input\n";
-							 g) in
+			       |Failure "int_of_string"->
+				 (print_string "\n\n\n Invalid input\n";g) in
 			     choose_action raised
 		  |"fold"-> fold g
 		  |"exit"-> exit 0
-	          |_-> print_string "Invalid input\n"; choose_action g end
+	          |_-> print_string "\n\n\n Invalid input\n"; 
+		       choose_action g end
     |Raise _-> begin match first with
 		  |"raise"-> let raised= try play_raise g second with
-			       |Failure "int_of_string"->print_string
-							   "Invalid input\n";
+			       |Failure "int_of_string"->
+				 print_string "\n\n\n Invalid input\n";
 							 g in
 			     choose_action (turn (raised))
 		  |"call"-> print_string
@@ -71,23 +71,25 @@ let rec choose_action (g:game)=
 			    call g
 		  |"fold"-> fold g
 		  |"exit"-> exit 0
-		  |_-> (print_string "Invalid input\n"; choose_action g) end
+		  |_-> 
+		    (print_string "\n\n\n Invalid input\n"; choose_action g) end
     |Fold-> failwith "a new hand should have started from AI"
     |Deal-> begin match first with
 		  |"raise"-> let raised= try play_raise g second with
-			       |Failure "int_of_string"->print_string
-							   "Invalid input\n";
-							 g in
+			       |Failure "int_of_string"->
+				 print_string "\n\n\nInvalid input\n"; g in
 			     choose_action raised
 		  |"check"-> choose_action (turn (check g))
 		  |"fold"-> fold g
 		  |"exit"-> exit 0
-	          |_-> (print_string "Invalid input\n"; choose_action g )end)
+	          |_-> 
+		    (print_string "\n\n\n Invalid input\n"; choose_action g)end)
 and play_raise g second= let num= int_of_string second in
 			     if (is_valid_raise num g)
 			     then choose_action (turn (do_raise g num))
-					 else (print_string "Invalid input\n";
-					       g)
+					 else 
+					   (print_string 
+					      "\n\n\n Invalid input\n"; g)
 
 (*[play_game g] takes in a game [g] and deals cards in a hand, begins rounds
 *of betting, and launches new hands when appropriate. play_game will terminate
