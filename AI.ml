@@ -80,6 +80,7 @@ let floor_bet_to_all_in bet g =
                            if p1.stake > p2.stake then p2.stake else p1.stake
                          else 
                            bet
+  | _ -> bet
 
 let turn g =
   let modified_points = (rand_multiplier ()) *. (hand_points g) in
