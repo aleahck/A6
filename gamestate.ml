@@ -209,7 +209,8 @@ let game_to_string (g:game) =
   "NEW ROUND OF BETTING:\nThe flop is: " ^ c_list_string ^ "\n" ^
   "The bet is: " ^ (string_of_int (g.bet-little_blind)) ^ "\n" ^
   "The pot is: " ^ (string_of_int g.pot) ^ "\n\n" ^
-  player_to_string (List.assoc "You" g.players)
+  player_to_string (List.assoc "You" g.players) ^ "\n" ^
+  player_to_string (List.assoc "AI" g.players)
 
 
 (* Only works for 2 players; only ends the hand instead of continuing hand
