@@ -50,8 +50,8 @@ let rec choose_action (g:game)=
   match g.last_move with
     |Call->failwith "Should have been caught in if"
     |Check->begin match first with
-		  |"check"->print_string "\nThis round of betting has concluded\n"
-			   ;check g
+		  |"check"->print_string ("\nThis round of betting has"^
+			      "concluded\n");check g
 		  |"raise"-> let raised= try play_raise g second with
 			       |Failure "int_of_string"->(print_string
 							   "Invalid input\n";
@@ -67,7 +67,8 @@ let rec choose_action (g:game)=
 							 g in
 			     choose_action (turn (raised))
 		  |"call"-> print_string
-			      "\nThis round of betting has concluded\n\n"; call g
+			      "\nThis round of betting has concluded\n\n"; 
+			    call g
 		  |"fold"-> fold g
 		  |"exit"-> exit 0
 		  |_-> (print_string "Invalid input\n"; choose_action g) end
