@@ -298,8 +298,8 @@ let rec compare_straight (h1:card list) (h2:card list) : card list =
 let compare_flush (h1:card list) (h2:card list) : card list =
   let s1 = most_common_suit h1 in
   let s2 = most_common_suit h2 in
-  let newh1 = (insertion_sort_suit (insertion_sort h1)) in
-  let newh2 = (insertion_sort_suit (insertion_sort h2)) in
+  let newh1 = (insertion_sort h1) in
+  let newh2 = (insertion_sort h2) in
   let rec loop hnd1 hnd2 =
     match (hnd1,hnd2) with
     | ([],[]) -> let r = Random.int 2 in
@@ -468,30 +468,30 @@ let determine_best_hand (c:card list) : hand =
     | h1::h2::h3::h4::h5::t -> HighCard ([h1;h2;h3;h4;h5])
     | _ -> failwith "?"
 
+(* working except for straight and straight flush *)
 let compare_hands (h1:hand) (h2:hand) : hand =
-  if h1 > h2 then h1
-  else if h2 > h1 then h2
-  else match h1 with
-  | HighCard (_) -> determine_best_hand (compare_high_card
+  match (h1,h2) with
+  | (HighCard (_),HighCard (_)) -> determine_best_hand (compare_high_card
                     (hand_to_card_list h1) (hand_to_card_list h2))
-  | Pair (_) -> determine_best_hand (compare_pair
+  | (Pair (_),Pair (_)) -> determine_best_hand (compare_pair
                 (hand_to_card_list h1) (hand_to_card_list h2))
-  | TwoPair (_) -> determine_best_hand (compare_two_pair
+  | (TwoPair (_),TwoPair (_)) -> determine_best_hand (compare_two_pair
                    (hand_to_card_list h1) (hand_to_card_list h2))
-  | Triple (_) -> determine_best_hand (compare_triple
+  | (Triple (_),Triple (_)) -> determine_best_hand (compare_triple
                   (hand_to_card_list h1) (hand_to_card_list h2))
-  | Straight (_) -> determine_best_hand (compare_straight
+  | (Straight (_),Straight (_)) -> determine_best_hand (compare_straight
                     (hand_to_card_list h1) (hand_to_card_list h2))
-  | Flush (_) -> determine_best_hand (compare_flush
+  | (Flush (_),Flush (_)) -> determine_best_hand (compare_flush
                  (hand_to_card_list h1) (hand_to_card_list h2))
-  | FullHouse (_) -> determine_best_hand (compare_full_house
+  | (FullHouse (_),FullHouse (_)) -> determine_best_hand (compare_full_house
                      (hand_to_card_list h1) (hand_to_card_list h2))
-  | Quads (_) -> determine_best_hand (compare_quads
+  | (Quads (_),Quads (_)) -> determine_best_hand (compare_quads
                  (hand_to_card_list h1) (hand_to_card_list h2))
-  | StraightFlush (_) -> determine_best_hand (compare_straight_flush
+  | (StraightFlush (_),StraightFlush (_)) -> determine_best_hand (compare_straight_flush
                          (hand_to_card_list h1) (hand_to_card_list h2))
-  | RoyalFlush (_) -> determine_best_hand (compare_royal_flush
+  | (RoyalFlush (_),RoyalFlush (_)) -> determine_best_hand (compare_royal_flush
                       (hand_to_card_list h1) (hand_to_card_list h2))
+  | _ -> if h1 > h2 then h1 else h2
 
 (*helper that returns the string representation of a card list
 * given the hand type as a string argument *)
