@@ -144,30 +144,28 @@ let new_hand (g:game) =
   let snd_id= fst (List.nth g.players 1) in
   let snd_player= {snd_player1 with stake = snd_player1.stake + g.pot} in
   let new_start= List.nth g.first_better 1 in
-  if (new_start=fst_id) then
-    let undelt1 =
-    undelt
-      ([(fst_id,{fst_player with
-        stake = fst_player.stake - big_blind;
-        amount_in = fst_player.amount_in + big_blind});
-      (snd_id,{snd_player with
-        stake = snd_player.stake - little_blind;
-        amount_in = snd_player.amount_in + little_blind})])
-      g
-    in
-    deal_two undelt1
-  else
-    let undelt2 =
-    undelt
-      ([(snd_id,{snd_player with
-        stake = snd_player.stake - big_blind;
-        amount_in = snd_player.amount_in + big_blind});
-      (fst_id,{fst_player with
-        stake = fst_player.stake - little_blind;
-        amount_in = fst_player.amount_in + little_blind})])
-      g
-    in
-    deal_two undelt2
+  let undealt1= 
+    if (new_start=fst_id) 
+    then
+      undelt
+	([(fst_id,{fst_player with
+		    stake = fst_player.stake - big_blind;
+		    amount_in = fst_player.amount_in + big_blind});
+	  (snd_id,{snd_player with
+		    stake = snd_player.stake - little_blind;
+		    amount_in = snd_player.amount_in + little_blind})])
+	g
+    else
+      undelt
+	([(snd_id,{snd_player with
+		    stake = snd_player.stake - big_blind;
+		    amount_in = snd_player.amount_in + big_blind});
+	  (fst_id,{fst_player with
+		    stake = fst_player.stake - little_blind;
+		    amount_in = fst_player.amount_in + little_blind})])
+	g
+  in
+    deal_two undealt1
 
 
 (* Turns card list into string. Helper function for to_string functions *)
