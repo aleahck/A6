@@ -149,10 +149,10 @@ let new_hand (g:game) =
     undelt
       ([(fst_id,{fst_player with
         stake = fst_player.stake - big_blind;
-        amount_in = fst_player.amount_in + big_blind});
+        amount_in = big_blind});
       (snd_id,{snd_player with
         stake = snd_player.stake - little_blind;
-        amount_in = snd_player.amount_in + little_blind})])
+        amount_in = little_blind})])
       g
     in
     deal_two undelt1
@@ -161,10 +161,10 @@ let new_hand (g:game) =
     undelt
       ([(snd_id,{snd_player with
         stake = snd_player.stake - big_blind;
-        amount_in = snd_player.amount_in + big_blind});
+        amount_in = big_blind});
       (fst_id,{fst_player with
         stake = fst_player.stake - little_blind;
-        amount_in = fst_player.amount_in + little_blind})])
+        amount_in = little_blind})])
       g
     in
     deal_two undelt2
@@ -200,9 +200,11 @@ let player_to_string (p:player) =
 
 (* Returns the string of the flop, bet and pot fields of the game state. *)
 let game_to_string (g:game) =
-  "The flop is: " ^ (string_of_clist g.flop "") ^ "\n" ^
+  let c_list_string = if (string_of_clist g.flop "") = "" then "None"
+    else (string_of_clist g.flop "") in
+  "NEW ROUND OF BETTING:\nThe flop is: " ^ c_list_string ^ "\n" ^
   "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
-  "The pot is: " ^ (string_of_int g.pot) ^ "\n" ^
+  "The pot is: " ^ (string_of_int g.pot) ^ "\n\n" ^
   player_to_string (List.assoc "You" g.players)
 
 
@@ -212,7 +214,7 @@ let fold (g:game) =
   let new_h = new_hand g in
   let continue = List.for_all (fun x -> (snd x).stake >=0) new_h.players in
   if continue
-    then (print_string ("\n \nA new hand has begun! \n");new_h)
+    then (print_string ("\nA NEW HAND HAS BEGUN! \n\n");new_h)
   else (if (current_player new_h).stake >=0 then
         ((Printf.printf "%s wins!\n" (List.hd new_h.first_better)); exit 0)
         else
