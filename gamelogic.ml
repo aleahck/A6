@@ -357,8 +357,7 @@ let compare_straight_flush (h1:card list) (h2:card list) : card list =
 (* The only time both players can have a royal flush is when the
 * 5 board cards make a royal flush so this is automatically a tie *)
 let compare_royal_flush (h1:card list) (h2:card list) : card list =
-  | ([],[]) -> let r = Random.int 2 in
-               if r = 0 then h1 else h2
+  let r = Random.int 2 in if r = 0 then h1 else h2
 
 (*above here works - except for exceptions*)
 
@@ -368,7 +367,7 @@ let compare_royal_flush (h1:card list) (h2:card list) : card list =
 * and then call compare on the two generated hands. Since this determines
 * the best possible hand, we need all 7 available cards,
 * the 2 from a player's hand and the 5 from the board.
-* It could be fewer than seven cards for AI *)
+* It could be fewer than seven cards for AI but not fewer than 5*)
 let determine_best_hand (c:card list) : hand =
   if royal_flush_check c then (*checked*)
     let s = fst(most_common_suit c) in
