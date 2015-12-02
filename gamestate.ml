@@ -41,7 +41,7 @@ let add1_flop (g:game) =
 (* Adds 3 cards to the flop (for new hands). *)
 let add3_flop (g:game) =
   let d1 = top3_cards g.deck in
-  let new_first = (if List.hd g.first_better = fst (List.hd g.players)
+  let new_first = (if ((List.hd g.first_better) = fst (List.hd g.players))
     then List.rev g.players
     else g.players) in
   {g with deck = snd d1; flop = fst d1; players = new_first}
@@ -133,7 +133,7 @@ let deal_two (g:game) =
 (* Helper function for new_hand. *)
 let undelt pfield g =
   {flop= [];
-     bet=1;
+     bet=big_blind;
      pot = big_blind+little_blind;
      players= pfield;
      deck= rand_deck();
@@ -155,20 +155,20 @@ let new_hand (g:game) =
     then
       undelt
 	      ([(fst_id,{fst_player with
-  		    stake = fst_player.stake - big_blind;
-  		    amount_in = big_blind});
+  		    stake = fst_player.stake - little_blind;
+  		    amount_in = little_blind});
 	      (snd_id,{snd_player with
-  		    stake = snd_player.stake - little_blind;
-  	      amount_in = little_blind})])
+  		    stake = snd_player.stake - big_blind;
+  	      amount_in = big_blind})])
 	      g
     else
       undelt
 	      ([(snd_id,{snd_player with
-		      stake = snd_player.stake - big_blind;
-		      amount_in = big_blind});
+		      stake = snd_player.stake - little_blind;
+		      amount_in = little_blind});
 	      (fst_id,{fst_player with
-		      stake = fst_player.stake - little_blind;
-		      amount_in = little_blind})])
+		      stake = fst_player.stake - big_blind;
+		      amount_in = big_blind})])
 	      g
   in
     deal_two undealt1
@@ -207,9 +207,10 @@ let game_to_string (g:game) =
   let c_list_string = if (string_of_clist g.flop "") = "" then "None"
     else (string_of_clist g.flop "") in
   "NEW ROUND OF BETTING:\nThe flop is: " ^ c_list_string ^ "\n" ^
-  "The bet is: " ^ (string_of_int (g.bet-little_blind)) ^ "\n" ^
+  "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
   "The pot is: " ^ (string_of_int g.pot) ^ "\n\n" ^
-  player_to_string (List.assoc "You" g.players)
+  (player_to_string (List.assoc "You" g.players)) ^ "\n" ^
+  (player_to_string (List.assoc "AI" g.players))
 
 
 (* Only works for 2 players; only ends the hand instead of continuing hand
@@ -249,9 +250,9 @@ let make_game () =
 * hand. Helper function for winner_to_string. *)
 let winner (g:game) =
   let p1 = snd (List.hd g.players) in
-  let h1 = determine_best_hand p1.cards in
+  let h1 = determine_best_hand (p1.cards@g.flop) in
   let p2 = snd (List.nth g.players 1) in
-  let h2 = determine_best_hand p2.cards in
+  let h2 = determine_best_hand (p2.cards@g.flop) in
   if (compare_hands h1 h2) = h1 then (fst (List.hd g.players), h1)
   else (fst (List.nth g.players 1), h2)
 
