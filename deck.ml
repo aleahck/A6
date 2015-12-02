@@ -11,6 +11,7 @@ let order_deck () =
   next_card (card_above start_c) [start_c]
 
 let rand_deck () = 
+  Random.self_init () ;
   let arr = Array.of_list (order_deck ()) in
   let swap i j =
     let t = arr.(i) in
