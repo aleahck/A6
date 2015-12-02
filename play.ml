@@ -50,15 +50,14 @@ let rec choose_action (g:game)=
   match g.last_move with
     |Call->failwith "Should have been caught in if"
     |Check->begin match first with
-		  |"check"->print_string ("\nThis round of betting has"^
-			      "concluded\n");check g
+		  |"check"->print_string ("\nThis round of betting has concluded\n");check g
 		  |"raise"-> let raised= try play_raise g second with
 			       |Failure "int_of_string"->
 				 (print_string "\n\n\n Invalid input\n";g) in
 			     choose_action raised
 		  |"fold"-> fold g
 		  |"exit"-> exit 0
-	          |_-> print_string "\n\n\n Invalid input\n"; 
+	          |_-> print_string "\n\n\n Invalid input\n";
 		       choose_action g end
     |Raise _-> begin match first with
 		  |"raise"-> let raised= try play_raise g second with
@@ -67,11 +66,11 @@ let rec choose_action (g:game)=
 							 g in
 			     choose_action (turn (raised))
 		  |"call"-> print_string
-			      "\nThis round of betting has concluded\n\n"; 
+			      "\nThis round of betting has concluded\n\n";
 			    call g
 		  |"fold"-> fold g
 		  |"exit"-> exit 0
-		  |_-> 
+		  |_->
 		    (print_string "\n\n\n Invalid input\n"; choose_action g) end
     |Fold-> failwith "a new hand should have started from AI"
     |Deal-> begin match first with
@@ -82,13 +81,13 @@ let rec choose_action (g:game)=
 		  |"check"-> choose_action (turn (check g))
 		  |"fold"-> fold g
 		  |"exit"-> exit 0
-	          |_-> 
+	          |_->
 		    (print_string "\n\n\n Invalid input\n"; choose_action g)end)
 and play_raise g second= let num= int_of_string second in
 			     if (is_valid_raise num g)
 			     then choose_action (turn (do_raise g num))
-					 else 
-					   (print_string 
+					 else
+					   (print_string
 					      "\n\n\n Invalid input\n"; g)
 
 (*[play_game g] takes in a game [g] and deals cards in a hand, begins rounds
@@ -96,16 +95,19 @@ and play_raise g second= let num= int_of_string second in
 *when someone wins or exits*)
 let rec play_game  (g: game)=
   match game_stage g with
-  |Initial-> let betting= if (fst (List.hd (g.players))= "You")
+  |Initial-> print_string "IN INITIAL " ;
+  let betting= if (fst (List.hd (g.players))= "You")
 	       then choose_action g
 	       else choose_action (turn g) in
-	     play_game (add3_flop betting)
-  |Flop|Turn-> let dealt= {g with last_move= Deal} in
+	         play_game (add3_flop betting)
+  |Flop|Turn-> print_string "IN FLOP OR TURN " ;
+  let dealt= {g with last_move= Deal} in
 	       let betting= if (fst (List.hd (dealt.players))= "You")
 	       then choose_action dealt
 	       else choose_action (turn dealt) in
 	       play_game (add1_flop betting)
-  |River-> let dealt= {g with last_move= Deal} in
+  |River-> print_string "IN RIVER " ;
+  let dealt= {g with last_move= Deal} in
 	   let betting= if (fst (List.hd (dealt.players))= "You")
 	       then choose_action dealt
 	       else choose_action (turn dealt) in
