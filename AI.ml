@@ -103,7 +103,7 @@ let turn g =
   let points_needed = (point_standard g) *. (pot_odds g) in
   let diff_in_points = int_of_float (modified_points -. points_needed) in
   let can_check = g.last_move = Check || g.last_move = Deal in
-  let call_v_raise = (Random.self_init() ; Random.int 50) ;
+  let call_v_raise = (Random.self_init() ; Random.int 50) in
   if can_check && diff_in_points <= call_v_raise then
     (print_endline "AI checks" ; check g)
   else if diff_in_points <= 0 then
