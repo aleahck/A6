@@ -40,7 +40,7 @@ let second_word command=
 let rec choose_action (g:game)=
   print_string (game_to_string g);
   if (end_betting g) then (print_string
-			      "\nThis round of betting has concluded\n";g)
+			      "\nThis round of betting has concluded because someone has no money\n";g)(*shorten*)
   else
   (print_string "Enter a command:\n";
   let command= read_line () in
@@ -50,36 +50,37 @@ let rec choose_action (g:game)=
   match g.last_move with
     |Call->failwith "Should have been caught in if"
     |Check->begin match first with
-		  |"check"->print_string ("\nThis round of betting has concluded\n");check g
-		  |"raise"-> let raised= try play_raise g second with
+		  |"check"->
+		    print_string ("\nThis round of betting has concluded because two people checked\n");check g(*shorten*)
+		  |"raise"-> print_string "check followed by raise"; let raised= try play_raise g second with
 			       |Failure "int_of_string"->
 				 (print_string "\n\n\n Invalid input\n";g) in
 			     choose_action raised
-		  |"fold"-> fold g
+		  |"fold"-> print_string "check then fold";fold g
 		  |"exit"-> exit 0
 	          |_-> print_string "\n\n\n Invalid input\n";
 		       choose_action g end
     |Raise _-> begin match first with
-		  |"raise"-> let raised= try play_raise g second with
+		  |"raise"-> print_string "raise followed by raise";let raised= try play_raise g second with
 			       |Failure "int_of_string"->
 				 print_string "\n\n\n Invalid input\n";
 							 g in
 			     choose_action (turn (raised))
 		  |"call"-> print_string
-			      "\nThis round of betting has concluded\n\n";
+			      "\nThis round of betting has concluded because the player called\n\n";
 			    call g
-		  |"fold"-> fold g
+		  |"fold"-> print_string "raise followed by fold"; fold g
 		  |"exit"-> exit 0
 		  |_->
 		    (print_string "\n\n\n Invalid input\n"; choose_action g) end
     |Fold-> failwith "a new hand should have started from AI"
     |Deal-> begin match first with
-		  |"raise"-> let raised= try play_raise g second with
+		  |"raise"-> print_string "first raise";let raised= try play_raise g second with
 			       |Failure "int_of_string"->
 				 print_string "\n\n\nInvalid input\n"; g in
 			     choose_action raised
-		  |"check"-> choose_action (turn (check g))
-		  |"fold"-> fold g
+		  |"check"-> print_string "first check";choose_action (turn (check g))
+		  |"fold"-> print_string "first fold";fold g
 		  |"exit"-> exit 0
 	          |_->
 		    (print_string "\n\n\n Invalid input\n"; choose_action g)end)
@@ -101,21 +102,19 @@ let rec play_game  (g: game)=
 	       else choose_action (turn g) in
 	         play_game (add3_flop betting)
   |Flop|Turn-> print_string "IN FLOP OR TURN " ;
-  let dealt= {g with last_move= Deal} in
-	       let betting= if (fst (List.hd (dealt.players))= "You")
-	       then choose_action dealt
-	       else choose_action (turn dealt) in
+  	       let betting= if (fst (List.hd (g.players))= "You")
+	       then choose_action g
+	       else choose_action (turn g) in
 	       play_game (add1_flop betting)
   |River-> print_string "IN RIVER " ;
-  let dealt= {g with last_move= Deal} in
-	   let betting= if (fst (List.hd (dealt.players))= "You")
-	       then choose_action dealt
-	       else choose_action (turn dealt) in
-	   let the_winner= fst (winner dealt) in
-	   print_string (winner_to_string dealt);
-	   let new_ps= if (the_winner= get_current_id dealt)
-		       then List.rev dealt.players
-		       else dealt.players in
+	   let betting= if (fst (List.hd (g.players))= "You")
+			then choose_action g
+			else choose_action (turn g) in
+	   let the_winner= fst (winner g) in
+	   print_string (winner_to_string betting);
+	   let new_ps= if (the_winner= get_current_id betting)
+		       then List.rev betting.players
+		       else betting.players in
 	   let ggame= {betting with players= new_ps} in
 	   play_game (fold ggame)
 
