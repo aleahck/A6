@@ -34,6 +34,12 @@ let second_word command=
 			    ((String.length lower_trimmed)-space)in
   String.trim untrimmed
 
+let play_raise g second= let num= int_of_string second in
+			     if (is_valid_raise num g)
+			     then turn (do_raise g num)
+					 else
+					   (print_string
+					      "\n\n\n Invalid input\n"; g)
 
 (*[choose_action g] will perform a single player move in a round of betting.
 *The round will continue until someone calls, or two people check.*)
@@ -65,7 +71,7 @@ if (end_betting g) then (print_string
 			       |Failure "int_of_string"->
 				 print_string "\n\n\n Invalid input\n";
 							 g in
-			     choose_action (turn (raised))
+			     choose_action raised
 		  |"call"-> print_string
 			      "\nThis round of betting has concluded because the player called\n\n";
 			    call g
@@ -84,12 +90,7 @@ if (end_betting g) then (print_string
 		  |"exit"-> exit 0
 	          |_->
 		    (print_string "\n\n\n Invalid input\n"; choose_action g)end)
-and play_raise g second= let num= int_of_string second in
-			     if (is_valid_raise num g)
-			     then choose_action (turn (do_raise g num))
-					 else
-					   (print_string
-					      "\n\n\n Invalid input\n"; g)
+
 
 (*[play_game g] takes in a game [g] and deals cards in a hand, begins rounds
 *of betting, and launches new hands when appropriate. play_game will terminate
