@@ -85,7 +85,11 @@ if (end_betting g) then (print_string
 			       |Failure "int_of_string"->
 				 print_string "\n\n\nInvalid input\n"; g in
 			     choose_action raised
-		  |"check"-> print_string "first check";choose_action (turn (check g))
+		  |"check"-> print_string "first check";
+			     let checked= (turn (check g)) in
+			     if (checked.last_move=Check)
+			     then checked
+			     else choose_action (checked)
 		  |"fold"-> print_string "first fold";fold g
 		  |"exit"-> exit 0
 	          |_->
