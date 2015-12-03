@@ -131,8 +131,8 @@ let rec play_game  (g: game)=
 *first hand*)
 let _=
   print_string ("\nWelcome to TEXAS HOLD'EM! The game has begun.\n"^
-	       "You can CALL, RAISE a number (i.e. raise 20), FOLD, or CHECK "^
-		"during your turn.\nType exit to quit the game.\n");
+	"You can CALL, RAISE a number (i.e. raise 20), FOLD, or CHECK "^
+  "during your turn.\nType EXIT to quit the game.\n");
   let new_game= make_game () in
   let new_h= fold new_game in
   play_game new_h
