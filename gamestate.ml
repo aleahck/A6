@@ -36,15 +36,15 @@ let get_current_id (g:game) = fst (List.hd g.players)
 let add1_flop (g:game) =
   let d1 = top_card g.deck in
   let old_flop = g.flop in
-  {g with deck = snd d1; flop = old_flop@[fst d1]}
+  {g with deck = snd d1; flop = old_flop@[fst d1]; last_move = Deal}
 
 (* Adds 3 cards to the flop (for new hands). *)
 let add3_flop (g:game) =
   let d1 = top3_cards g.deck in
-  let new_first = (if List.hd g.first_better = fst (List.hd g.players)
+  let new_first = (if ((List.hd g.first_better) = fst (List.hd g.players))
     then List.rev g.players
     else g.players) in
-  {g with deck = snd d1; flop = fst d1; players = new_first}
+  {g with deck = snd d1; flop = fst d1; players = new_first; last_move = Deal}
 
 
 (*[do_player_bet p i] removes [i] from [p]'s stake and adds it to [p]'s
@@ -61,9 +61,13 @@ let do_player_raise (g:game) (p:player) (i: int)=
    cards=p.cards;
    amount_in=p.amount_in+i}
 
-(* Returns false if any player in the game is out of money or if the last
+(* Returns true if any player in the game is out of money or if the last
 * move is Call. *)
 let end_betting (g:game) =
+  (if not (List.for_all (fun x -> (snd x).stake > 0) g.players) then
+      print_string "\nout of money\n"
+    else if g.last_move = Call then print_string "\nlast move is call\n"
+    else print_string "\ndon't end betting\n");
   not (List.for_all (fun x -> (snd x).stake > 0) g.players) ||
   g.last_move = Call
 
@@ -206,7 +210,7 @@ let player_to_string (p:player) =
 let game_to_string (g:game) =
   let c_list_string = if (string_of_clist g.flop "") = "" then "None"
     else (string_of_clist g.flop "") in
-  "NEW ROUND OF BETTING:\nThe flop is: " ^ c_list_string ^ "\n" ^
+  "The flop is: " ^ c_list_string ^ "\n" ^
   "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
   "The pot is: " ^ (string_of_int g.pot) ^ "\n\n" ^
   (player_to_string (List.assoc "You" g.players)) ^ "\n" ^
@@ -250,9 +254,9 @@ let make_game () =
 * hand. Helper function for winner_to_string. *)
 let winner (g:game) =
   let p1 = snd (List.hd g.players) in
-  let h1 = determine_best_hand p1.cards in
+  let h1 = determine_best_hand (p1.cards@g.flop) in
   let p2 = snd (List.nth g.players 1) in
-  let h2 = determine_best_hand p2.cards in
+  let h2 = determine_best_hand (p2.cards@g.flop) in
   if (compare_hands h1 h2) = h1 then (fst (List.hd g.players), h1)
   else (fst (List.nth g.players 1), h2)
 

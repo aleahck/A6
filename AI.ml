@@ -15,13 +15,26 @@ let call_amount g =
   g.bet - ai.amount_in
 
 let point_standard g = match game_stage g with
-  | Initial -> 20.
+  | Initial -> 15.
   | Flop    -> 40.
-  | Turn    -> 60.
-  | River   -> 80.
+  | Turn    -> 55.
+  | River   -> 90.
 
-let same_suit_bonus  = function
-  | h1::h2::[] -> if same_suit h1 h2 then 10. else 0.
+let same_suit_bonus = function
+  | h1::h2::[] -> if same_suit h1 h2 then 6. else 0.
+  | _          -> 0.
+
+let check_within_5 c1 c2 =
+  let rec helper a b i = if i = 0 then false
+                         else if a = b then true
+                         else helper (card_above a) b (i-1)
+  in
+  let gc,lc = if c1 > c2 then c1,c2 else c2,c1 in
+  helper (card_above lc) gc 4
+  
+
+let possible_straight_bonus = function
+  | h1::h2::[] -> if check_within_5 h1 h2 then 5. else 0.
   | _          -> 0.
 
 let card_bonus c = match value_to_string (val_of_card c) with
@@ -44,25 +57,28 @@ let rec cards_bonus = function
   | [] -> 0.
   | h::t -> (card_bonus h) +. (cards_bonus t)
 
-let best_hand_bonus clist = match determine_best_hand clist with
+let best_hand_bonus cards = match determine_best_hand cards with
   | HighCard clist -> cards_bonus clist
-  | Pair clist    -> 10. +. cards_bonus clist
-  | TwoPair clist  -> 20. +. cards_bonus clist
-  | Triple clist  -> 30. +. cards_bonus clist
-  | Straight clist -> 40. +. cards_bonus clist
-  | Flush clist    -> 50. +. cards_bonus clist
-  | FullHouse clist -> 60. +. cards_bonus clist
-  | Quads clist    -> 70. +. cards_bonus clist
-  | StraightFlush clist -> 80. +. cards_bonus clist
-  | RoyalFlush clist -> 90. +. cards_bonus clist
+  | Pair clist    -> 23. +. cards_bonus clist
+  | TwoPair clist  -> 40. +. cards_bonus clist
+  | Triple clist  -> 60. +. cards_bonus clist
+  | Straight clist -> 90. +. cards_bonus clist
+  | Flush clist    -> 120. +. cards_bonus clist
+  | FullHouse clist -> 150. +. cards_bonus clist
+  | Quads clist    -> 300. +. cards_bonus clist
+  | StraightFlush clist -> 500. +. cards_bonus clist
+  | RoyalFlush clist -> 1000. +. cards_bonus clist
 
 let pot_odds g = 
-  let bet_needed = float_of_int (call_amount g) in
-  (float_of_int g.pot) /. bet_needed
+  let c = call_amount g in
+  let bet_needed = float_of_int (c) in
+  if c = 0 then 1.
+  else bet_needed /. (float_of_int(g.pot) +. bet_needed)
 
 let hand_points_initial g =
   let _, ai = List.hd g.players in
-  (cards_bonus ai.cards) +. (same_suit_bonus ai.cards)
+  (cards_bonus ai.cards) +.(same_suit_bonus ai.cards) 
+                         +.(possible_straight_bonus ai.cards)
 
 let hand_points_midgame g =
   let _, ai = List.hd g.players in
@@ -72,7 +88,7 @@ let hand_points g = match game_stage g with
   | Initial -> hand_points_initial g
   | _       -> hand_points_midgame g
 
-let rand_multiplier () = Random.self_init () ; Random.float 2.
+let rand_multiplier () = Random.self_init () ; (Random.float 1.) +. 0.5
 
 let floor_bet_to_all_in bet g =
   match g.players with
@@ -84,17 +100,22 @@ let floor_bet_to_all_in bet g =
 
 let turn g =
   let modified_points = (rand_multiplier ()) *. (hand_points g) in
-  let points_needed = (point_standard g) /. (pot_odds g) in
+  let points_needed = (point_standard g) *. (pot_odds g) in
   let diff_in_points = int_of_float (modified_points -. points_needed) in
   let can_check = g.last_move = Check || g.last_move = Deal in
-  if can_check && diff_in_points <= 10 then
+  let rand_call_bound = (Random.self_init() ; Random.int 50) in
+  let to_call = call_amount g in
+  let max_call = if rand_call_bound > to_call then rand_call_bound 
+                 else to_call in
+  if can_check && diff_in_points <= max_call then
     (print_endline "AI checks" ; check g)
   else if diff_in_points <= 0 then
     (print_endline "AI folds" ; fold g)
-  else if diff_in_points <= 10 then
+  else if diff_in_points <= max_call then
     (print_endline "AI calls" ; call g)
   else (*not sure when he can raise*)
-    let amount = floor_bet_to_all_in diff_in_points g in
+    let to_raise = diff_in_points - to_call in
+    let amount = floor_bet_to_all_in to_raise g in
     (Printf.printf "AI raise %d\n" amount ; do_raise g amount)
 
 
