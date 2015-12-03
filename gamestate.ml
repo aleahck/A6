@@ -36,7 +36,7 @@ let get_current_id (g:game) = fst (List.hd g.players)
 let add1_flop (g:game) =
   let d1 = top_card g.deck in
   let old_flop = g.flop in
-  {g with deck = snd d1; flop = old_flop@[fst d1]}
+  {g with deck = snd d1; flop = old_flop@[fst d1]; last_move = Deal}
 
 (* Adds 3 cards to the flop (for new hands). *)
 let add3_flop (g:game) =
@@ -44,7 +44,7 @@ let add3_flop (g:game) =
   let new_first = (if ((List.hd g.first_better) = fst (List.hd g.players))
     then List.rev g.players
     else g.players) in
-  {g with deck = snd d1; flop = fst d1; players = new_first}
+  {g with deck = snd d1; flop = fst d1; players = new_first; last_move = Deal}
 
 
 (*[do_player_bet p i] removes [i] from [p]'s stake and adds it to [p]'s
