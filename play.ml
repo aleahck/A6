@@ -34,12 +34,18 @@ let second_word command=
 			    ((String.length lower_trimmed)-space)in
   String.trim untrimmed
 
+let play_raise g second= let num= int_of_string second in
+			     if (is_valid_raise num g)
+			     then turn (do_raise g num)
+					 else
+					   (print_string
+					      "\n\n\n Invalid input\n"; g)
 
 (*[choose_action g] will perform a single player move in a round of betting.
 *The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
-  if (end_betting g) then (print_string
-			      "\nThis round of betting has concluded";g)(*shorten*)
+if (end_betting g) then (print_string
+			      "\nThis round of betting has concluded";g)
   else
   (print_string (game_to_string g);
   print_string "Enter a command:\n";
@@ -65,7 +71,7 @@ let rec choose_action (g:game)=
 			       |Failure "int_of_string"->
 				 print_string "\n\n\n Invalid input\n";
 							 g in
-			     choose_action (turn (raised))
+			     choose_action raised
 		  |"call"-> print_string
 			      "\nThis round of betting has concluded because the player called\n\n";
 			    call g
@@ -79,35 +85,37 @@ let rec choose_action (g:game)=
 			       |Failure "int_of_string"->
 				 print_string "\n\n\nInvalid input\n"; g in
 			     choose_action raised
-		  |"check"-> print_string "first check";choose_action (turn (check g))
+		  |"check"-> print_string "first check";
+			     let checked= (turn (check g)) in
+			     if (checked.last_move=Check)
+			     then checked
+			     else choose_action (checked)
 		  |"fold"-> print_string "first fold";fold g
 		  |"exit"-> exit 0
 	          |_->
 		    (print_string "\n\n\n Invalid input\n"; choose_action g)end)
-and play_raise g second= let num= int_of_string second in
-			     if (is_valid_raise num g)
-			     then choose_action (turn (do_raise g num))
-					 else
-					   (print_string
-					      "\n\n\n Invalid input\n"; g)
+
 
 (*[play_game g] takes in a game [g] and deals cards in a hand, begins rounds
 *of betting, and launches new hands when appropriate. play_game will terminate
 *when someone wins or exits*)
 let rec play_game  (g: game)=
   match game_stage g with
-  |Initial-> print_string "IN INITIAL " ;
-  let betting= if (fst (List.hd (g.players))= "You")
+  |Initial-> print_string "IN INITIAL \n" ;
+  let betting= print_string "\nNEW ROUND OF BETTING\n";
+	       if (fst (List.hd (g.players))= "You")
 	       then choose_action g
 	       else choose_action (turn g) in
 	         play_game (add3_flop betting)
-  |Flop|Turn-> print_string "IN FLOP OR TURN " ;
-  	       let betting= if (fst (List.hd (g.players))= "You")
+  |Flop|Turn-> print_string "IN FLOP OR TURN \n" ;
+  	       let betting= print_string "\nNEW ROUND OF BETTING\n";
+		 if (fst (List.hd (g.players))= "You")
 	       then choose_action g
 	       else choose_action (turn g) in
 	       play_game (add1_flop betting)
-  |River-> print_string "IN RIVER " ;
-	   let betting= if (fst (List.hd (g.players))= "You")
+  |River-> print_string "IN RIVER \n" ;
+	   let betting= print_string "\n NEW ROUND OF BETTING\n";
+			if (fst (List.hd (g.players))= "You")
 			then choose_action g
 			else choose_action (turn g) in
 	   let the_winner= fst (winner g) in

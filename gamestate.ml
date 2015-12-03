@@ -210,7 +210,7 @@ let player_to_string (p:player) =
 let game_to_string (g:game) =
   let c_list_string = if (string_of_clist g.flop "") = "" then "None"
     else (string_of_clist g.flop "") in
-  "NEW ROUND OF BETTING:\nThe flop is: " ^ c_list_string ^ "\n" ^
+  "The flop is: " ^ c_list_string ^ "\n" ^
   "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
   "The pot is: " ^ (string_of_int g.pot) ^ "\n\n" ^
   (player_to_string (List.assoc "You" g.players)) ^ "\n" ^
