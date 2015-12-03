@@ -38,8 +38,8 @@ let second_word command=
 (*[choose_action g] will perform a single player move in a round of betting.
 *The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
-  if (end_betting g) then (print_string
-			      "\nThis round of betting has concluded";g)(*shorten*)
+if (end_betting g) then (print_string
+			      "\nThis round of betting has concluded";g)
   else
   (print_string (game_to_string g);
   print_string "Enter a command:\n";
@@ -96,18 +96,21 @@ and play_raise g second= let num= int_of_string second in
 *when someone wins or exits*)
 let rec play_game  (g: game)=
   match game_stage g with
-  |Initial-> print_string "IN INITIAL " ;
-  let betting= if (fst (List.hd (g.players))= "You")
+  |Initial-> print_string "IN INITIAL \n" ;
+  let betting= print_string "\nNEW ROUND OF BETTING\n";
+	       if (fst (List.hd (g.players))= "You")
 	       then choose_action g
 	       else choose_action (turn g) in
 	         play_game (add3_flop betting)
-  |Flop|Turn-> print_string "IN FLOP OR TURN " ;
-  	       let betting= if (fst (List.hd (g.players))= "You")
+  |Flop|Turn-> print_string "IN FLOP OR TURN \n" ;
+  	       let betting= print_string "\nNEW ROUND OF BETTING\n";
+		 if (fst (List.hd (g.players))= "You")
 	       then choose_action g
 	       else choose_action (turn g) in
 	       play_game (add1_flop betting)
-  |River-> print_string "IN RIVER " ;
-	   let betting= if (fst (List.hd (g.players))= "You")
+  |River-> print_string "IN RIVER \n" ;
+	   let betting= print_string "\n NEW ROUND OF BETTING\n";
+			if (fst (List.hd (g.players))= "You")
 			then choose_action g
 			else choose_action (turn g) in
 	   let the_winner= fst (winner g) in
