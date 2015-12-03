@@ -61,9 +61,13 @@ let do_player_raise (g:game) (p:player) (i: int)=
    cards=p.cards;
    amount_in=p.amount_in+i}
 
-(* Returns false if any player in the game is out of money or if the last
+(* Returns true if any player in the game is out of money or if the last
 * move is Call. *)
 let end_betting (g:game) =
+  (if not (List.for_all (fun x -> (snd x).stake > 0) g.players) then
+      print_string "\nout of money\n"
+    else if g.last_move = Call then print_string "\nlast move is call\n"
+    else print_string "\ndon't end betting\n");
   not (List.for_all (fun x -> (snd x).stake > 0) g.players) ||
   g.last_move = Call
 

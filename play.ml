@@ -38,11 +38,11 @@ let second_word command=
 (*[choose_action g] will perform a single player move in a round of betting.
 *The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
-  print_string (game_to_string g);
   if (end_betting g) then (print_string
-			      "\nThis round of betting has concluded because someone has no money\n";g)(*shorten*)
+			      "\nThis round of betting has concluded";g)(*shorten*)
   else
-  (print_string "Enter a command:\n";
+  (print_string (game_to_string g);
+  print_string "Enter a command:\n";
   let command= read_line () in
   let first= first_word command in
   let second= try (second_word command) with
@@ -51,7 +51,7 @@ let rec choose_action (g:game)=
     |Call->failwith "Should have been caught in if"
     |Check->begin match first with
 		  |"check"->
-		    print_string ("\nThis round of betting has concluded because two people checked\n");check g(*shorten*)
+		    print_string ("\nThis round of betting has concluded\n");check g
 		  |"raise"-> print_string "check followed by raise"; let raised= try play_raise g second with
 			       |Failure "int_of_string"->
 				 (print_string "\n\n\n Invalid input\n";g) in
@@ -123,8 +123,8 @@ let rec play_game  (g: game)=
 *first hand*)
 let _=
   print_string ("\nWelcome to TEXAS HOLD'EM! The game has begun.\n"^
-	       "You can call,raise by a number, fold, or check "^
-		"when it's your turn.\nType exit to quit the game.\n");
+	       "You can CALL, RAISE a number (i.e. raise 20), FOLD, or CHECK "^
+		"during your turn.\nType exit to quit the game.\n");
   let new_game= make_game () in
   let new_h= fold new_game in
   play_game new_h
