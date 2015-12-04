@@ -90,6 +90,14 @@ let hand_points g = match game_stage g with
 
 let rand_multiplier () = Random.self_init () ; (Random.float 1.) +. 0.5
 
+let rand_call_bound_for_game g = 
+  Random.self_init() ;
+  match game_stage g with
+  | Initial -> Random.int 15
+  | Flop    -> Random.int 30
+  | Turn    -> Random.int 40
+  | River   -> Random.int 50
+
 let floor_bet_to_all_in bet g =
   match g.players with
   | (_,p1)::(_,p2)::t -> if bet > p1.stake || bet > p2.stake then
@@ -105,7 +113,7 @@ let turn g =
   let diff_in_points = int_of_float (modified_points -. points_needed) in
   let can_check = g.last_move = Check || g.last_move = Deal in
   let can_raise = not ai.did_raise in
-  let rand_call_bound = (Random.self_init() ; Random.int 50) in
+  let rand_call_bound = rand_call_bound_for_game g in
   let to_call = call_amount g in
   let max_call = if rand_call_bound > to_call then rand_call_bound 
                  else to_call in
