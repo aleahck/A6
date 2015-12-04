@@ -1,8 +1,6 @@
 open AI
 open Gamestate
 
-type gamestage
-
 (*[game_stage g] takes in a game [g] and returns a gamestage determined by how
 *many cards have are in [g.flop]*)
 let game_stage g= match g.flop with
@@ -33,8 +31,9 @@ let second_word command=
 let play_raise g second= let num= int_of_string second in
 			     if (is_valid_raise num g)
 			     then turn (do_raise g num)
-			     else
-			       (print_string "\n\n\n Invalid input\n"; g)
+					 else
+					   (print_string
+					      "\n\n\n Invalid input\n"; g)
 
 (*[choose_action g] will perform a single player move in a round of betting.
 *The round will continue until someone calls, or two people check.*)
@@ -48,7 +47,6 @@ if (end_betting g) then (print_string
   let first= first_word command in
   let second= try (second_word command) with
 	      |Failure "nope"-> "" in
-<<<<<<< HEAD
   match first with
     | "rules"-> print_string
       ("\nRULES:\nYou can CALL, RAISE a number (i.e. raise 20), FOLD, or CHECK"^
@@ -97,75 +95,6 @@ if (end_betting g) then (print_string
               |"exit"-> exit 0
                     |_->
                 (print_string "\n\n\n Invalid input\n"; choose_action g)end))
-=======
- match g.last_move with
- |Call->failwith "Should have been caught in if"
- |Check->begin match first with
-	       | "rules"-> print_string
-			     ("\nRULES:\nYou can CALL, RAISE a number "^ 
-				"(i.e. raise 20), FOLD, or CHECK"^
-				  " during your turn.\nType RULES to see the "^
-				    "rules again."^
-				      "\nType EXIT to quit the game.\n\n") ; g
-               |"check"->
-                 print_string ("\nThis round of betting has concluded\n");
-                 check g
-               |"raise"-> print_string "check followed by raise";
-			  let raised= try play_raise g second with
-				      |Failure "int_of_string"->
-					(print_string
-					   "\n\n\n Invalid input\n";g) in
-			  choose_action raised
-               |"fold"-> print_string "check then fold";fold g
-               |"exit"-> exit 0
-               |_-> print_string "\n\n\n Invalid input\n";
-                    choose_action g end
- |Raise _-> begin match first with
-		  | "rules"-> print_string
-				("\nRULES:\nYou can CALL, RAISE a number "^ 
-				   "(i.e. raise 20), FOLD, or CHECK"^
-				     " during your turn.\nType RULES to see"^
-				       "the rules again."^
-					 "\nType EXIT to quit the game.\n\n") ;
-			      g
-		  |"raise"-> print_string "raise followed by raise";
-			     let raised= try play_raise g second with
-					 |Failure "int_of_string"->
-					   print_string
-					     "\n\n\n Invalid input\n"; g in
-			     choose_action raised
-		  |"call"-> print_string
-			      ("\nThis round of betting has concluded because"^
-			      "the player called\n\n");
-			    call g
-		  |"fold"-> print_string "raise followed by fold"; fold g
-		  |"exit"-> exit 0
-		  |_->
-                    (print_string "\n\n\n Invalid input\n"; choose_action g) end
- |Fold-> failwith "a new hand should have started from AI"
- |Deal-> begin match first with
-	       |"rules"-> print_string
-			    ("\nRULES:\nYou can CALL, RAISE a number "^ 
-			       "(i.e. raise 20), FOLD, or CHECK"^
-				 " during your turn.\nType RULES to see the "^
-				   "rules again."^
-				     "\nType EXIT to quit the game.\n\n") ; g
-               |"raise"-> print_string "first raise";
-			  let raised= try play_raise g second with
-				      |Failure "int_of_string"->
-					print_string "\n\n\nInvalid input\n"; 
-					g in
-			  choose_action raised
-               |"check"-> print_string "first check";
-			  let checked= (turn (check g)) in
-			  if (checked.last_move=Check)
-			  then checked
-			  else choose_action (checked)
-               |"fold"-> print_string "first fold";fold g
-               |"exit"-> exit 0
-               |_->
-                 (print_string "\n\n\n Invalid input\n"; choose_action g)end)
->>>>>>> dbee4ef07a60c2fd514d9a0194e44fd21b021a34
 
 
 (*[play_game g] takes in a game [g] and deals cards in a hand, begins rounds

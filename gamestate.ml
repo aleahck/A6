@@ -32,6 +32,14 @@ type game= {
     last_move: move
   }
 
+(*[game_stage g] takes in a game [g] and returns a gamestage determined by how
+*many cards have are in [g.flop]*)
+let game_stage g= match g.flop with
+    |a::b::c::d::e::[]-> River
+    |a::b::c::d::[]-> Turn
+    |a::b::c::[]-> Flop
+    |_-> Initial
+
 (* Returns the record of the current player. *)
 let current_player (g:game) = snd (List.hd g.players)
 
