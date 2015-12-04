@@ -1,11 +1,7 @@
 open AI
 open Gamestate
 
-
-(*gamestage represents the parts of a hand as determined by the number of cards
-*on the table. Initial will be before any cards are out, Flop will be when 3
-*cards are out, Turn when 4 and River when 5.*)
-type gamestage= Initial | Flop | Turn | River
+type gamestage
 
 (*[game_stage g] takes in a game [g] and returns a gamestage determined by how
 *many cards have are in [g.flop]*)
@@ -64,8 +60,7 @@ if (end_betting g) then (print_string
               |"check"->
                 print_string ("\nThis round of betting has concluded\n");
                 check g
-              |"raise"-> print_string "check followed by raise";
-                   let raised= try play_raise g second with
+              |"raise"-> let raised= try play_raise g second with
                    |Failure "int_of_string"->
                      (print_string
                         "\n\n\n Invalid input\n";g) in
@@ -75,8 +70,7 @@ if (end_betting g) then (print_string
                     |_-> print_string "\n\n\n Invalid input\n";
                    choose_action g end
             |Raise _-> begin match first with
-              |"raise"-> print_string "raise followed by raise";
-                   let raised= try play_raise g second with
+              |"raise"-> let raised= try play_raise g second with
                    |Failure "int_of_string"->
                      print_string
                        "\n\n\n Invalid input\n"; g in
@@ -90,7 +84,7 @@ if (end_betting g) then (print_string
                 (print_string "\n\n\n Invalid input\n"; choose_action g) end
             |Fold-> failwith "a new hand should have started from AI"
             |Deal-> begin match first with
-              |"raise"-> print_string "first raise";let raised= try play_raise g second with
+              |"raise"-> let raised= try play_raise g second with
                      |Failure "int_of_string"->
                        print_string "\n\n\nInvalid input\n"; g in
                        choose_action raised
@@ -110,8 +104,7 @@ if (end_betting g) then (print_string
 *when someone wins or exits*)
 let rec play_game  (g: game)=
   match game_stage g with
-  |Initial-> print_string "IN INITIAL \n" ;
-	     print_string "\nNEW ROUND OF BETTING\n";
+  |Initial-> print_string "\nNEW ROUND OF BETTING\n";
 	     let betting1= if (fst (List.hd (g.players))= "You")
 	     then let betting= choose_action g in
 		  (if (betting.last_move= Deal)
@@ -150,12 +143,15 @@ let rec play_game  (g: game)=
 			      (if (betting.last_move = Deal)
 			       then betting
 			       else (choose_action (betting)))in
-	   let the_winner= fst (winner betting1) in
-	   print_string (winner_to_string betting1);
-	   let new_ps= if (the_winner= get_current_id betting1)
-		       then List.rev betting1.players
-		       else betting1.players in
-	   let ggame= {betting1 with players= new_ps} in
+
+    let ggame =
+     if (betting1.last_move = Deal) then betting1
+     else (let the_winner= fst (winner betting1) in
+  	   print_string (winner_to_string betting1);
+  	   let new_ps= if (the_winner= get_current_id betting1)
+  		       then List.rev betting1.players
+  		       else betting1.players in
+  	   {betting1 with players= new_ps}) in
 	   play_game (fold ggame)
 
 

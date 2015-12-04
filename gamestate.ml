@@ -2,12 +2,16 @@ open Deck
 open Card
 open Gamelogic
 
+(*gamestage represents the parts of a hand as determined by the number of cards
+*on the table. Initial will be before any cards are out, Flop will be when 3
+*cards are out, Turn when 4 and River when 5.*)
+type gamestage= Initial | Flop | Turn | River
 
 type player = {
     stake: int;
     mutable cards: card list;
     amount_in: int;
-    did_raise: bool	   
+    did_raise: bool
   }
 
 let big_blind = 2
@@ -38,16 +42,16 @@ let get_current_id (g:game) = fst (List.hd g.players)
 
 let get_second_id (g:game) = fst (List.nth g.players 1)
 
-let raise_false (l:(id*player) list)= 
+let raise_false (l:(id*player) list)=
     List.map (fun x-> ((fst x),{(snd x) with did_raise= false})) l
 
 (* Adds 1 card to the flop. *)
 let add1_flop (g:game) =
   let d1 = top_card g.deck in
   let old_flop = g.flop in
-  {g with deck = snd d1; 
-	  flop = old_flop@[fst d1]; 
-	  last_move = Deal; 
+  {g with deck = snd d1;
+	  flop = old_flop@[fst d1];
+	  last_move = Deal;
 	  players= raise_false g.players}
 
 (* Adds 3 cards to the flop (for new hands). *)
@@ -74,10 +78,6 @@ let do_player_raise (g:game) (p:player) (i: int)=
 (* Returns true if any player in the game is out of money or if the last
 * move is Call. *)
 let end_betting (g:game) =
-  (if not (List.for_all (fun x -> (snd x).stake > 0) g.players) then
-      print_string "\nSomeone is out of money\n"
-    else if g.last_move = Call then print_string "\nThe last move is call\n"
-    else print_string "\ndon't end betting\n");
   (not (List.for_all (fun x -> (snd x).stake > 0) g.players)) ||
   (g.last_move = Call)
 
@@ -162,12 +162,12 @@ let undelt pfield g =
 (* Helper for fold and dealer. Creates new hand on the turn a player folds. *)
 let new_hand (g:game) =
   let fst_player1= snd (List.hd g.players) in
-  let fst_player= 
+  let fst_player=
     {fst_player1 with stake=fst_player1.stake; did_raise= false} in
   let fst_id= fst (List.hd g.players) in
   let snd_player1 = snd (List.nth g.players 1) in
   let snd_id= fst (List.nth g.players 1) in
-  let snd_player= 
+  let snd_player=
     {snd_player1 with stake = snd_player1.stake + g.pot; did_raise= false} in
   let new_start= List.hd g.first_better in
   let undealt1=
@@ -241,9 +241,9 @@ let fold (g:game) =
   if continue
     then (print_string ("\nA NEW HAND HAS BEGUN! \n\n");new_h)
   else (if (current_player new_h).stake >=0 then
-        (Printf.printf "\n%s won!\n" (get_current_id new_h); exit 0)
+        (Printf.printf "\n%s won the game!\n" (get_current_id new_h); exit 0)
         else
-        (Printf.printf "\n%s won!\n" (fst (List.nth new_h.players 1)); exit 0))
+        (Printf.printf "\n%s won the game!\n" (fst (List.nth new_h.players 1)); exit 0))
 
 
 (* Helper function for new_game. *)
@@ -280,3 +280,4 @@ let winner (g:game) =
 (* Returns a string of the best hand and the ID of the player that has it. *)
 let winner_to_string (g: game) =
     "\n"^(fst (winner g)^" won with the hand: "^hand_to_string (snd (winner g)))
+    ^"\n"
