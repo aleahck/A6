@@ -20,6 +20,8 @@ type id = string
 
 type move = Call | Raise of int | Check | Fold | Deal
 
+type gamestage= Initial| Flop | Turn | River
+
 (*Type game contains info on the game including fields for
 *flop: the current face-up cards as a card list
 *bet: the bet for the current hand as an int
@@ -36,6 +38,8 @@ type game= {
     first_better: id list;
     last_move: move
   }
+
+val game_stage: game-> gamestage
 
 val is_valid_raise: int-> game->bool
 
