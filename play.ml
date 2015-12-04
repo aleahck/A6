@@ -87,8 +87,8 @@ if (end_betting g) then (print_string
     |Deal-> begin match first with
 		  |"raise"-> print_string "first raise";let raised= try play_raise g second with
 			       |Failure "int_of_string"->
-				 print_string "\n\n\nInvalid input\n"; g in
-			     choose_action raised
+				       print_string "\n\n\nInvalid input\n"; g in
+			         choose_action raised
 		  |"check"-> print_string "first check";
 			     let checked= (turn (check g)) in
 			     if (checked.last_move=Check)
@@ -117,8 +117,7 @@ let rec play_game  (g: game)=
 		   then betting
 		   else (add3_flop (choose_action (betting))))in
 	     play_game betting1
-
-  |Flop|Turn-> let betting1=
+  |Flop|Turn-> let betting1= print_string "IN FLOP/TURN"
 		 if (fst (List.hd (g.players))= "You")
 		 then (let betting= choose_action g in
 		       (if (betting.last_move= Deal) && (not (end_betting betting))
@@ -170,7 +169,7 @@ print_string("
                      /         /
                               / ");
   print_string (
-  "\n____  ____  _  _    __    ___    _   _  _____  __    ____/ ____  __  __" ^
+  "\n ____  ____  _  _    __    ___    _   _  _____  __    ____/ ____  __  __" ^
   "\n(_  _)( ___)( \\/ )  /__\\  / __)  ( )_( )(  _  )(  )  (  _ \\( ___)(  \\/  )"^
   "\n  )(   )__)  )  (  /(__)\\ \\__ \\   ) _ (  )(_)(  )(__  )(_) ))__)  )    ( "^
   "\n (__) (____)(_/\\_)(__)(__)(___/  (_) (_)(_____)(____)(____/(____)(_/\\/\\_)"
