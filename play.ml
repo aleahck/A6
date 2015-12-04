@@ -111,11 +111,16 @@ let rec play_game  (g: game)=
 	     then let betting= choose_action g in
 		  (if (betting.last_move= Deal)
 		   then betting
-		   else (add3_flop betting))
+		   else( print_string "add3 after player";(add3_flop betting)))
 	     else let betting= turn g in
 		  (if (betting.last_move = Deal)
 		   then betting
-		   else (add3_flop (choose_action (betting))))in
+		   else (let  betting2= choose_action (betting) in
+			 if betting2.last_move= Deal 
+			 then betting2
+			 else add3_flop betting2 
+
+		  )) in
 	     play_game betting1
   |Flop|Turn-> let betting1= print_string "IN FLOP/TURN";
 		 if (fst (List.hd (g.players))= "You")
@@ -127,7 +132,10 @@ let rec play_game  (g: game)=
 		  else  let betting= turn g in
 			(if (betting.last_move = Deal)
 			 then (betting)
-			 else ((add1_flop (choose_action (betting)))))in
+			 else (let betting2= choose_action betting in
+			       if betting2.last_move= Deal 
+			       then betting2
+			       else add1_flop betting2)) in
 		       (play_game betting1)
   |River-> print_string "IN RIVER \n" ;
 	   let betting1= if (fst (List.hd (g.players))= "You")
