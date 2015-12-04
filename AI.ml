@@ -65,7 +65,7 @@ let pot_odds g =
   let c = call_amount g in
   let bet_needed = float_of_int (c) in
   if c = 0 then 1.
-  else bet_needed /. (float_of_int(g.pot) +. bet_needed)
+  else bet_needed /. float_of_int(g.pot)
 
 let hand_points_initial g =
   let _, ai = List.hd g.players in
@@ -104,7 +104,8 @@ let turn g =
   let points_needed = (point_standard g) *. (pot_odds g) in
   let diff_in_points = int_of_float (modified_points -. points_needed) in
   let can_check = g.last_move = Check || 
-                  (g.last_move = Deal && (game_stage g) = Initial) in
+                  (g.last_move = Deal && not ((game_stage g) = Initial)) ||
+                  ((game_stage g) = Initial && g.last_move = Call) in
   let can_raise = not ai.did_raise in
   let rand_call_bound = rand_call_bound_for_game g in
   let to_call = call_amount g in
@@ -117,7 +118,7 @@ let turn g =
   else if diff_in_points <= max_call || not can_raise then
     (print_endline "AI calls" ; call g)
   else 
-    let to_raise = diff_in_points - to_call in
+    let to_raise = (diff_in_points - to_call) * g.pot / ai.stake in
     let amount = floor_bet_to_all_in to_raise g in
     (Printf.printf "AI raises %d\n" amount ; do_raise g amount)
 
