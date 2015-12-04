@@ -69,8 +69,8 @@ let end_betting (g:game) =
       print_string "\nSomeone is out of money\n"
     else if g.last_move = Call then print_string "\nThe last move is call\n"
     else print_string "\ndon't end betting\n");
-  not (List.for_all (fun x -> (snd x).stake > 0) g.players) ||
-  g.last_move = Call
+  (not (List.for_all (fun x -> (snd x).stake > 0) g.players)) ||
+  (g.last_move = Call)
 
 
 (* Returns false if the current player is unable to call.*)
@@ -225,9 +225,9 @@ let fold (g:game) =
   if continue
     then (print_string ("\nA NEW HAND HAS BEGUN! \n\n");new_h)
   else (if (current_player new_h).stake >=0 then
-        ((Printf.printf "%s wins!\n" (List.hd new_h.first_better)); exit 0)
+        (Printf.printf "\n%s won!\n" (get_current_id new_h); exit 0)
         else
-        ((Printf.printf "%s wins!\n" (List.nth new_h.first_better 1)); exit 0))
+        (Printf.printf "\n%s won!\n" (fst (List.nth new_h.players 1)); exit 0))
 
 
 (* Helper function for new_game. *)
@@ -263,4 +263,3 @@ let winner (g:game) =
 (* Returns a string of the best hand and the ID of the player that has it. *)
 let winner_to_string (g: game) =
     "\n"^(fst (winner g)^" won with the hand: "^hand_to_string (snd (winner g)))
-
