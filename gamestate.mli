@@ -54,6 +54,7 @@ val winner: game-> string * hand
 val winner_to_string: game-> string
 
 val get_current_id: game-> string
+
 (*Takes in an int to raise the current bet by and the current game state.
 *Updates the bet to match raised value. The int will always be valid as this
 *must be called after is_valid_bet for human inputs*)
