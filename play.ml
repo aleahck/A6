@@ -45,7 +45,7 @@ let play_raise g second= let num= int_of_string second in
 *The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
 if (end_betting g) then (print_string
-			      "\nThis round of betting has concluded";g)
+			   "\nThis round of betting will be skipped beacuse:";g)
   else
   (print_string (game_to_string g);
   print_string "Enter a command:\n";
@@ -102,28 +102,43 @@ if (end_betting g) then (print_string
 let rec play_game  (g: game)=
   match game_stage g with
   |Initial-> print_string "IN INITIAL \n" ;
-  let betting= print_string "\nNEW ROUND OF BETTING\n";
-	       if (fst (List.hd (g.players))= "You")
-	       then choose_action g
-	       else choose_action (turn g) in
-	         play_game (add3_flop betting)
+	     print_string "\nNEW ROUND OF BETTING\n";
+	     let betting1= if (fst (List.hd (g.players))= "You")
+	     then let betting= choose_action g in
+		  (if (betting.last_move= Deal) 
+		   then betting
+		   else (add3_flop betting))
+	     else let betting= turn g in 
+		  (if (betting.last_move = Deal) 
+		   then betting
+		   else (add3_flop (choose_action (betting))))in
+	     play_game betting1 
+				 
   |Flop|Turn-> print_string "IN FLOP OR TURN \n" ;
-  	       let betting= print_string "\nNEW ROUND OF BETTING\n";
-		 if (fst (List.hd (g.players))= "You")
-	       then choose_action g
-	       else choose_action (turn g) in
-	       play_game (add1_flop betting)
+  	       let betting1= if (fst (List.hd (g.players))= "You")
+	     then let betting= choose_action g in
+		  (if (betting.last_move= Deal) 
+		   then betting
+		   else (add1_flop betting))
+	     else let betting= turn g in 
+		  (if (betting.last_move = Deal) 
+		   then betting
+		   else (add1_flop (choose_action (betting))))in
+	     play_game betting1 
   |River-> print_string "IN RIVER \n" ;
-	   let betting= print_string "\n NEW ROUND OF BETTING\n";
-			if (fst (List.hd (g.players))= "You")
-			then choose_action g
-			else choose_action (turn g) in
-	   let the_winner= fst (winner g) in
-	   print_string (winner_to_string betting);
-	   let new_ps= if (the_winner= get_current_id betting)
-		       then List.rev betting.players
-		       else betting.players in
-	   let ggame= {betting with players= new_ps} in
+	   let betting1= if (fst (List.hd (g.players))= "You")
+			 then let betting= choose_action g in
+			      betting
+			 else let betting= turn g in 
+			      (if (betting.last_move = Deal) 
+			       then betting
+			       else (choose_action (betting)))in
+	   let the_winner= fst (winner betting1) in
+	   print_string (winner_to_string betting1);
+	   let new_ps= if (the_winner= get_current_id betting1)
+		       then List.rev betting1.players
+		       else betting1.players in
+	   let ggame= {betting1 with players= new_ps} in
 	   play_game (fold ggame)
 
 
@@ -131,8 +146,8 @@ let rec play_game  (g: game)=
 *first hand*)
 let _=
   print_string ("\nWelcome to TEXAS HOLD'EM! The game has begun.\n"^
-	       "You can CALL, RAISE a number (i.e. raise 20), FOLD, or CHECK "^
-		"during your turn.\nType exit to quit the game.\n");
+	"You can CALL, RAISE a number (i.e. raise 20), FOLD, or CHECK "^
+  "during your turn.\nType EXIT to quit the game.\n");
   let new_game= make_game () in
   let new_h= fold new_game in
   play_game new_h

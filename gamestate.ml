@@ -27,9 +27,10 @@ type game= {
     last_move: move
   }
 
+(* Returns the record of the current player. *)
 let current_player (g:game) = snd (List.hd g.players)
 
-(*  *)
+(* Returns the ID of the current player. *)
 let get_current_id (g:game) = fst (List.hd g.players)
 
 (* Adds 1 card to the flop. *)
@@ -65,8 +66,8 @@ let do_player_raise (g:game) (p:player) (i: int)=
 * move is Call. *)
 let end_betting (g:game) =
   (if not (List.for_all (fun x -> (snd x).stake > 0) g.players) then
-      print_string "\nout of money\n"
-    else if g.last_move = Call then print_string "\nlast move is call\n"
+      print_string "\nSomeone is out of money\n"
+    else if g.last_move = Call then print_string "\nThe last move is call\n"
     else print_string "\ndon't end betting\n");
   not (List.for_all (fun x -> (snd x).stake > 0) g.players) ||
   g.last_move = Call
@@ -85,8 +86,7 @@ let is_valid_check (g:game) =
 (* Returns false if the current player is unable to raise the bet by i. *)
 let is_valid_raise (i:int) (g:game) =
   let difference = g.bet - (current_player g).amount_in in
-  if ((difference + i) >= (current_player g).stake) || (i<=0) then false
-  else true
+  ((difference + i) <= (current_player g).stake) || (i<=0)
 
 (* Raises the current bet and pot by i, subtracts it from the current player's
 * stake, adds it to their amount in, changes the current_player to the next
@@ -262,5 +262,5 @@ let winner (g:game) =
 
 (* Returns a string of the best hand and the ID of the player that has it. *)
 let winner_to_string (g: game) =
-    (fst (winner g) ^ "won with the hand:" ^ hand_to_string (snd (winner g)) )
+    "\n"^(fst (winner g)^" won with the hand: "^hand_to_string (snd (winner g)))
 
