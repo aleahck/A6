@@ -117,7 +117,7 @@ let rec play_game  (g: game)=
 		   then betting
 		   else (add3_flop (choose_action (betting))))in
 	     play_game betting1
-  |Flop|Turn-> let betting1= print_string "IN FLOP/TURN"
+  |Flop|Turn-> let betting1= print_string "IN FLOP/TURN";
 		 if (fst (List.hd (g.players))= "You")
 		 then (let betting= choose_action g in
 		       (if (betting.last_move= Deal) && (not (end_betting betting))
