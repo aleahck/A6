@@ -119,25 +119,31 @@ let turn g =
   let max_call = if rand_call_bound > to_call then rand_call_bound 
                  else to_call in
   if can_check && diff_in_points <= max_call then
-    (print_endline "|-------------|" ;
+    (print_endline "" ;
+     print_endline "|-------------|" ;
      print_endline "|             |" ;
      print_endline "|  AI checks  |" ;
      print_endline "|             |";
      print_endline "|-------------|" ; 
+     print_endline "" ;
      check g)
   else if diff_in_points <= 0 then
-    (print_endline "|------------|" ;
+    (print_endline "" ;
+     print_endline "|------------|" ;
      print_endline "|            |" ;
      print_endline "|  AI folds  |" ;
      print_endline "|            |" ;
      print_endline "|------------|" ; 
+     print_endline "" ;
      fold g)
   else if diff_in_points <= max_call || not can_raise then
-    (print_endline "|------------|" ;
+    (print_endline "" ;
+     print_endline "|------------|" ;
      print_endline "|            |" ;
      print_endline "|  AI calls  |" ;
      print_endline "|            |" ;
      print_endline "|------------|" ; 
+     print_endline "" ;
      call g)
   else 
     let to_raise = (diff_in_points - to_call) in
@@ -145,11 +151,13 @@ let turn g =
     let extra_dashes,extra_spaces = if amount / 100 > 0 then "---","   "
                                     else if amount / 10 > 0 then "--","  "
                                     else "-"," " in 
-    (Printf.printf "|------------%s--|\n" extra_dashes ;
+    (print_endline "" ;
+     Printf.printf "|------------%s--|\n" extra_dashes ;
      Printf.printf "|            %s  |\n" extra_spaces ;
      Printf.printf "|  AI raises %d  |\n" amount ;
      Printf.printf "|            %s  |\n" extra_spaces ;
      Printf.printf "|------------%s--|\n" extra_dashes ;
+     print_endline "" ;
      do_raise g amount)
 
 
