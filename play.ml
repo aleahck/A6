@@ -23,7 +23,7 @@ let first_word command=
 let second_word command=
   let lower_trimmed= String.trim (String.lowercase command) in
   let space= try String.index lower_trimmed ' ' with
-	       |Not_found-> failwith "nope" in
+	       |Not_found-> failwith "nope"  in
   let untrimmed= String.sub lower_trimmed space
 			    ((String.length lower_trimmed)-space)in
   String.trim untrimmed
@@ -35,6 +35,9 @@ let play_raise g second= let num= int_of_string second in
 					   (print_string
 					      "\n\n\n Invalid input\n"; g)
 
+let check_no_snd g s f= if s= "" then f g 
+			else (print_string "\n\n\n Invalid input\n";g)  
+
 (*[choose_action g] will perform a single player move in a round of betting.
 *The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
@@ -45,27 +48,31 @@ if (end_betting g) then (print_string
   print_string "\n\nEnter a command:\n";
   let command= read_line () in
   let first= first_word command in
-  let second= try (second_word command) with
+  let second= try (second_word command) with 
 	      |Failure "nope"-> "" in
   match g.last_move with
   |Call->failwith "Should have been caught in if"
   |Check->begin match first with
-		|"check"->
-                  print_string ("\nThis round of betting has concluded\n");
-                  check g
+		|"check"-> check_no_snd g second (fun x->(print_string 
+			       ("\nThis round of betting has concluded\n");
+			     check x))
+
 		|"raise"-> let raised= try play_raise g second with
 				       |Failure "int_of_string"->
 					 (print_string
 					    "\n\n\n Invalid input\n";g) in
 			   choose_action raised
-		|"fold"-> print_string "check then fold";fold g
+		|"fold"-> check_no_snd g second 
+				   (fun x-> print_string 
+					      "check then fold";fold x)
 		|"exit"-> exit 0
-		|"rules"-> print_string
+		|"rules"->  check_no_snd g second 
+				   (fun x-> print_string
 			      ("\nRULES:\nYou can CALL, RAISE a number (i.e."^
 				 "raise 20), FOLD, or CHECK"^
 				 " during your turn.\nType RULES to see the"^
 				   "rules again."^
-				   "\nType EXIT to quit the game.\n\n") ; g
+				   "\nType EXIT to quit the game.\n\n") ; x)
                 |_-> print_string "\n\n\n Invalid input\n";
                      choose_action g end
   |Raise _-> begin match first with
@@ -74,50 +81,69 @@ if (end_betting g) then (print_string
 					    print_string
 					      "\n\n\n Invalid input\n"; g in
 			      choose_action raised
-		   |"call"-> print_string
-			       ("\nThis round of betting has concluded"^
-				  "because the player"^
-				  "called\n\n");
-			     call g
-		   |"fold"-> print_string "raise followed by fold"; fold g
+		   |"call"->  check_no_snd g second 
+				       (fun x->print_string
+					     ("\nThis round of betting has"^
+						"concluded"^
+						  "because the player"^
+						    "called\n\n");
+					       call x)
+		   |"fold"->  check_no_snd g second 
+				       (fun x-> print_string 
+						  "raise followed by fold"; 
+						fold x)
 		   |"exit"-> exit 0
-		   |"rules"-> print_string
+		   |"rules"->  check_no_snd g second 
+				   (fun x-> print_string
 				("\nRULES:\nYou can CALL, RAISE a number (i.e."^
 				   "raise 20), FOLD, or CHECK "^
 				     "during your turn.\nType RULES to see the"^
 				       "rules again."^
 					 "\nType EXIT to quit the game.\n\n") ;
-			      g
+					    x)
 		   |_->
                      (print_string "\n\n\n Invalid input\n"; choose_action g)
 	     end
   |Fold-> failwith "a new hand should have started from AI"
   |Deal-> begin match first with
-		|"call"-> if (is_valid_call g)
-			  then (let ai_went= turn (call g) in
+		|"call"->  check_no_snd g second 
+				   (fun x-> if (is_valid_call x)
+			  then (let ai_went= turn (call x) in
 				if (ai_went.last_move= Check)
 				then ai_went
 				else choose_action ai_went)
-			  else  (print_string "\n\n\nInvalid input\n"; g)
+			  else  (print_string "\n\n\nInvalid input\n"; x))
 		|"raise"-> let raised= try play_raise g second with
 				       |Failure "int_of_string"->
 					 print_string "\n\n\nInvalid input\n";
 					 g in
 			   choose_action raised
-		|"check"-> if is_valid_check g
-			   then (let checked= (turn (check g)) in
-				 if (checked.last_move=Check)
-				 then checked
-				 else choose_action (checked))
-			   else (print_string "\n\n\nInvalid input\n"; g)
-		|"fold"-> fold g
+		|"check"->  check_no_snd g second 
+				     (fun x->if is_valid_check x
+					     then (let checked= 
+						     (turn (check x)) in
+						   if (checked.last_move=Check)
+						   then checked
+						   else choose_action (checked))
+					     else (print_string 
+						     "\n\n\nInvalid input\n"; 
+						   x))
+		|"fold"->  check_no_snd g second 
+				   (fun x-> fold x)
 		|"exit"-> exit 0
-		|"rules"-> print_string
-			      ("\nRULES:\nYou can CALL, RAISE a number (i.e."^
-				 "raise 20), FOLD, or CHECK"^
-				 " during your turn.\nType RULES to see the"^
-				   "rules again."^
-				   "\nType EXIT to quit the game.\n\n") ; g
+		|"rules"->  check_no_snd g second 
+				     (fun x-> print_string
+						("\nRULES:\nYou can CALL,"^
+						   "RAISE a number (i.e."^
+						     "raise 20), FOLD, or"^
+						       "CHECK during your"^
+							 "turn.\nType RULES"^
+							   "to see the"^
+							     "rules again."^
+							       "\nType EXIT"^
+								 "to quit the"^
+								   "game.\n\n");
+					      x)
                 |_->
                   (print_string "\n\n\n Invalid input\n"; choose_action g)end)
 
