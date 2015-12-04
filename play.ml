@@ -42,7 +42,7 @@ if (end_betting g) then (print_string
 			   "\nThis round of betting has concluded. \n";g)
   else
   (print_string (game_to_string g);
-  print_string "\nEnter a command:\n";
+  print_string "\n\nEnter a command:\n";
   let command= read_line () in
   let first= first_word command in
   let second= try (second_word command) with
@@ -105,8 +105,7 @@ if (end_betting g) then (print_string
 					 g in
 			   choose_action raised
 		|"check"-> if is_valid_check g
-			   then (print_string "first check";
-				 let checked= (turn (check g)) in
+			   then (let checked= (turn (check g)) in
 				 if (checked.last_move=Check)
 				 then checked
 				 else choose_action (checked))
