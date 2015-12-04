@@ -89,14 +89,19 @@ if (end_betting g) then (print_string
 					 "\nType EXIT to quit the game.\n\n") ;
 			      g
 		   |_->
-                     (print_string "\n\n\n Invalid input\n"; choose_action g) end
+                     (print_string "\n\n\n Invalid input\n"; choose_action g) 
+	     end
   |Fold-> failwith "a new hand should have started from AI"
   |Deal-> begin match first with
 		|"call"-> if (is_valid_call g) 
 			  then (print_string
 			       ("\nThis round of betting has concluded"^
 				  "because the player"^
-				  "called\n\n"); call g)
+				  "called\n\n"); 
+				let ai_went= turn (call g) in
+				if (ai_went.last_move= Check) 
+				then ai_went
+				else choose_action ai_went)
 			  else  (print_string "\n\n\nInvalid input\n"; g)
 		|"raise"-> let raised= try play_raise g second with
 				       |Failure "int_of_string"->
