@@ -104,7 +104,7 @@ let turn g =
   let points_needed = (point_standard g) *. (pot_odds g) in
   let diff_in_points = int_of_float (modified_points -. points_needed) in
   let can_check = g.last_move = Check || g.last_move = Deal in
-  let can_raise = ai.did_raise in
+  let can_raise = not ai.did_raise in
   let rand_call_bound = (Random.self_init() ; Random.int 50) in
   let to_call = call_amount g in
   let max_call = if rand_call_bound > to_call then rand_call_bound 
@@ -115,7 +115,7 @@ let turn g =
     (print_endline "AI folds" ; fold g)
   else if diff_in_points <= max_call || not can_raise then
     (print_endline "AI calls" ; call g)
-  else (*not sure when he can raise*)
+  else 
     let to_raise = diff_in_points - to_call in
     let amount = floor_bet_to_all_in to_raise g in
     (Printf.printf "AI raises %d\n" amount ; do_raise g amount)
