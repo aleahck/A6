@@ -92,18 +92,22 @@ let is_valid_raise (i:int) (g:game) =
 * stake, adds it to their amount in, changes the current_player to the next
 * player, and changes the last_move to Raise. *)
 let do_raise (g:game) (i:int)=
-  let new_player= do_player_raise g (current_player g) i in
+  let num = if i > (snd (List.nth g.players 1)).stake then
+    (snd (List.nth g.players 1)).stake
+    else i
+  in
+  let new_player= do_player_raise g (current_player g) num in
   let p_id = get_current_id g in
   let new_players= List.tl (g.players)@[(p_id,new_player)] in
   let difference= g.bet- (current_player g).amount_in in
-  let new_pot = if difference>0 then g.pot+ difference + i else g.pot+i in
+  let new_pot = if difference>0 then g.pot+ difference + num else g.pot+num in
   {flop= g.flop;
-   bet= g.bet+i;
+   bet= g.bet+num;
    pot= new_pot;
    players= new_players;
    deck= g.deck;
    first_better= g.first_better;
-   last_move= Raise i
+   last_move= Raise num
   }
 
 (* Changes the last move to Call and returns the new gamestate. *)
