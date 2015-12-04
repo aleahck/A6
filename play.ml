@@ -118,19 +118,17 @@ let rec play_game  (g: game)=
 		   else (add3_flop (choose_action (betting))))in
 	     play_game betting1 
 				 
-  |Flop|Turn-> print_string "IN FLOP OR TURN \n" ;
-  	       let betting1= 
+  |Flop|Turn-> let betting1= 
 		 if (fst (List.hd (g.players))= "You")
-		 then (print_string "YOU\n";
-		       let betting= choose_action g in
-		       (if (betting.last_move= Deal) 
-			then (print_string "folded\n"; betting)
-			else (print_string "didn't fold\n"; (add1_flop betting))))
-		  else (print_string "AI\n"; let betting= turn g in 
+		 then (let betting= choose_action g in
+		       (if (betting.last_move= Deal) && (not (end_betting betting))
+	        	then betting
+			else add1_flop betting))
+		  else  let betting= turn g in 
 			(if (betting.last_move = Deal) 
-			 then (print_string "folded\n";betting)
-			 else (print_string "didn't fold\n";(add1_flop (choose_action (betting))))))in
-		       (print_string "recursing\n";play_game betting1)
+			 then (betting)
+			 else ((add1_flop (choose_action (betting)))))in
+		       (play_game betting1)
   |River-> print_string "IN RIVER \n" ;
 	   let betting1= if (fst (List.hd (g.players))= "You")
 			 then let betting= choose_action g in
