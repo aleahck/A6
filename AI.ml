@@ -2,14 +2,6 @@ open Gamestate
 open Gamelogic
 open Card
 
-type gamestage = Initial | Flop | Turn | River
-
-let game_stage g = match g.flop with
-  | h1::h2::h3::h4::h5::[] -> River
-  | h1::h2::h3::h4::[]     -> Turn
-  | h1::h2::h3::[]         -> Flop
-  | _                      -> Initial
-
 let call_amount g =
   let i,ai = List.hd g.players in
   g.bet - ai.amount_in
