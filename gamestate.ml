@@ -91,7 +91,9 @@ let end_betting (g:game) =
 
 (* Returns false if the current player is unable to call.*)
 let is_valid_call (g:game) =
-  if (g.bet - (current_player g).amount_in) > (current_player g).stake
+  if (current_player g).amount_in = little_blind then
+    true
+  else if (g.bet - (current_player g).amount_in) > (current_player g).stake
     then false
   else true
 
@@ -138,6 +140,7 @@ let check (g:game) =
     [((get_current_id g),(current_player g))];
 	  last_move= Check
   }
+
 
 
 (* Deals two cards to each player and returns the gamestate with the updated
