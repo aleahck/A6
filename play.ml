@@ -45,7 +45,7 @@ let play_raise g second= let num= int_of_string second in
 *The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
 if (end_betting g) then (print_string
-			   "\nThis round of betting will be skipped beacuse:";g)
+			   "\nThis round of betting will be skipped. \n";g)
   else
   (print_string (game_to_string g);
   print_string "Enter a command:\n";
@@ -57,20 +57,24 @@ if (end_betting g) then (print_string
     |Call->failwith "Should have been caught in if"
     |Check->begin match first with
 		  |"check"->
-		    print_string ("\nThis round of betting has concluded\n");check g
-		  |"raise"-> print_string "check followed by raise"; let raised= try play_raise g second with
-			       |Failure "int_of_string"->
-				 (print_string "\n\n\n Invalid input\n";g) in
+		    print_string ("\nThis round of betting has concluded\n");
+		    check g
+		  |"raise"-> print_string "check followed by raise"; 
+			     let raised= try play_raise g second with
+					 |Failure "int_of_string"->
+					   (print_string 
+					      "\n\n\n Invalid input\n";g) in
 			     choose_action raised
 		  |"fold"-> print_string "check then fold";fold g
 		  |"exit"-> exit 0
 	          |_-> print_string "\n\n\n Invalid input\n";
 		       choose_action g end
     |Raise _-> begin match first with
-		  |"raise"-> print_string "raise followed by raise";let raised= try play_raise g second with
-			       |Failure "int_of_string"->
-				 print_string "\n\n\n Invalid input\n";
-							 g in
+		  |"raise"-> print_string "raise followed by raise";
+			     let raised= try play_raise g second with
+					 |Failure "int_of_string"->
+					   print_string 
+					     "\n\n\n Invalid input\n"; g in
 			     choose_action raised
 		  |"call"-> print_string
 			      "\nThis round of betting has concluded because the player called\n\n";
@@ -115,16 +119,18 @@ let rec play_game  (g: game)=
 	     play_game betting1 
 				 
   |Flop|Turn-> print_string "IN FLOP OR TURN \n" ;
-  	       let betting1= if (fst (List.hd (g.players))= "You")
-	     then let betting= choose_action g in
-		  (if (betting.last_move= Deal) 
-		   then betting
-		   else (add1_flop betting))
-	     else let betting= turn g in 
-		  (if (betting.last_move = Deal) 
-		   then betting
-		   else (add1_flop (choose_action (betting))))in
-	     play_game betting1 
+  	       let betting1= 
+		 if (fst (List.hd (g.players))= "You")
+		 then (print_string "YOU\n";
+		       let betting= choose_action g in
+		       (if (betting.last_move= Deal) 
+			then (print_string "folded\n"; betting)
+			else (print_string "didn't fold\n"; (add1_flop betting))))
+		  else (print_string "AI\n"; let betting= turn g in 
+			(if (betting.last_move = Deal) 
+			 then (print_string "folded\n";betting)
+			 else (print_string "didn't fold\n";(add1_flop (choose_action (betting))))))in
+		       (print_string "recursing\n";play_game betting1)
   |River-> print_string "IN RIVER \n" ;
 	   let betting1= if (fst (List.hd (g.players))= "You")
 			 then let betting= choose_action g in
