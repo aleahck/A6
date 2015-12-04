@@ -103,7 +103,8 @@ let turn g =
   let modified_points = (rand_multiplier ()) *. (hand_points g) in
   let points_needed = (point_standard g) *. (pot_odds g) in
   let diff_in_points = int_of_float (modified_points -. points_needed) in
-  let can_check = g.last_move = Check || g.last_move = Deal in
+  let can_check = g.last_move = Check || 
+                  (g.last_move = Deal && (game_stage g) = Initial) in
   let can_raise = not ai.did_raise in
   let rand_call_bound = rand_call_bound_for_game g in
   let to_call = call_amount g in
