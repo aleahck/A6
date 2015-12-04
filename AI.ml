@@ -80,15 +80,15 @@ let hand_points g = match game_stage g with
   | Initial -> hand_points_initial g
   | _       -> hand_points_midgame g
 
-let rand_multiplier () = Random.self_init () ; (Random.float 1.) +. 0.5
+let rand_multiplier () = Random.self_init () ; (Random.float 0.5) +. 0.75
 
 let rand_call_bound_for_game g = 
   Random.self_init() ;
   match game_stage g with
-  | Initial -> Random.int 15
-  | Flop    -> Random.int 30
-  | Turn    -> Random.int 40
-  | River   -> Random.int 50
+  | Initial -> Random.int 10
+  | Flop    -> Random.int 20
+  | Turn    -> Random.int 30
+  | River   -> Random.int 40
 
 let floor_bet_to_all_in bet g =
   match g.players with
@@ -112,14 +112,37 @@ let turn g =
   let max_call = if rand_call_bound > to_call then rand_call_bound 
                  else to_call in
   if can_check && diff_in_points <= max_call then
-    (print_endline "AI checks" ; check g)
+    (print_endline "|-------------|" ;
+     print_endline "|             |" ;
+     print_endline "|  AI checks  |" ;
+     print_endline "|             |";
+     print_endline "|-------------|" ; 
+     check g)
   else if diff_in_points <= 0 then
-    (print_endline "AI folds" ; fold g)
+    (print_endline "|------------|" ;
+     print_endline "|            |" ;
+     print_endline "|  AI folds  |" ;
+     print_endline "|            |" ;
+     print_endline "|------------|" ; 
+     fold g)
   else if diff_in_points <= max_call || not can_raise then
-    (print_endline "AI calls" ; call g)
+    (print_endline "|------------|" ;
+     print_endline "|            |" ;
+     print_endline "|  AI calls  |" ;
+     print_endline "|            |" ;
+     print_endline "|------------|" ; 
+     call g)
   else 
-    let to_raise = (diff_in_points - to_call) * g.pot / ai.stake in
+    let to_raise = (diff_in_points - to_call) in
     let amount = floor_bet_to_all_in to_raise g in
-    (Printf.printf "AI raises %d\n" amount ; do_raise g amount)
+    let extra_dashes,extra_spaces = if amount / 100 > 0 then "---","   "
+                                    else if amount / 10 > 0 then "--","  "
+                                    else "-"," " in 
+    (Printf.printf "|------------%s--|\n" extra_dashes ;
+     Printf.printf "|            %s  |\n" extra_spaces ;
+     Printf.printf "|  AI raises %d  |\n" amount ;
+     Printf.printf "|            %s  |\n" extra_spaces ;
+     Printf.printf "|------------%s--|\n" extra_dashes ;
+     do_raise g amount)
 
 
