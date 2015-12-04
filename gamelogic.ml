@@ -2,7 +2,6 @@
 open Card
 
 (*types*)
-
 type hand =
 | HighCard of card list
 | Pair of card list
@@ -79,11 +78,12 @@ let rec loop clist h d cl s =
              else loop t h d cl (s+1)
           in loop c 0 0 0 0
 
-(*remove duplicates from a list*)
-let rec remove_dups (l:'a list) : 'a list =
+(*remove duplicate values from a card list*)
+let rec remove_dups (l:card list) : card list =
   match l with
   | [] -> []
-  | h::t -> h::(remove_dups (List.filter (fun x -> x <> h) t))
+  | h::t -> h::(remove_dups (List.filter
+    (fun x -> val_of_card x <> val_of_card h) t))
 
 (*check if a card list contains a royal flush*)
 let royal_flush_check (c:card list) : bool =
@@ -139,6 +139,17 @@ let flush_check (c:card list) : bool =
                then loop t (acc + 1)
                else loop t acc
   in loop c 0
+
+(*return true if the straight is a A5432*)
+let low_straight (c:card list) : bool =
+  let vals = List.map val_of_card c in
+  List.mem (value_of_string "A") vals &&
+  List.mem (value_of_string "5") vals &&
+  List.mem (value_of_string "4") vals &&
+  List.mem (value_of_string "3") vals &&
+  List.mem (value_of_string "2") vals &&
+  not (List.mem (value_of_string "6") vals) &&
+  not (List.mem (value_of_string "7") vals)
 
 (*check if a card list contains a straight *)
 let straight_check (c:card list) : bool =
@@ -199,8 +210,7 @@ let two_pair_check (c:card list) : bool =
                    else loop (h2::t) acc
   in loop c 0
 
-(*helpers for compare_hands
-*invariant: all card lists have 5 cards upon initial function call?*)
+(*helpers for compare_hands*)
 
 (*HighCard comparison - return whichever hand (card list) is better*)
 let compare_high_card (h1:card list) (h2:card list) : card list =
@@ -291,12 +301,9 @@ let compare_triple (h1:card list) (h2:card list) : card list =
                           else h1
                         in loop h1 h2
 
-(* Straight comparison - returns the better hand
-* Does not work *)
+(* Straight comparison - returns the better hand *)
 let rec compare_straight (h1:card list) (h2:card list) : card list =
-  match (insertion_sort h1,insertion_sort h2) with
-  | ([],[]) -> let r = Random.int 2 in
-               if r = 0 then h1 else h2
+  match (insertion_sort (remove_dups h1),insertion_sort (remove_dups h2)) with
   (* because a straight with an A will be AKQJT or A5432 *)
   | (h11::h12::h13::t1,h21::h22::h23::t2) ->
     let highCard1 =
@@ -305,7 +312,12 @@ let rec compare_straight (h1:card list) (h2:card list) : card list =
     let highCard2 =
     if one_step_below h22 h21 && one_step_below h23 h22 then h21
     else if one_step_below h23 h22 then h22 else h23 in
-    if compare_high_card [highCard1] [highCard2] = [highCard1] then h1 else h2
+    if low_straight h1 && low_straight h2 then let r = Random.int 2 in
+                                          if r = 0 then h1 else h2
+    else if low_straight h1 then h2
+    else if low_straight h2 then h1
+    else if val_of_card highCard1 > val_of_card highCard2 then h1
+    else h2
   | _ -> failwith "incorrect input to function"
 
 (* Flush comparison - returns the better hand *)
@@ -362,8 +374,8 @@ let rec compare_quads (h1:card list) (h2:card list) : card list =
     else compare_quads (snd1::t1) (snd2::t2)
   | _ -> failwith "incorrect input to function"
 
-(* StraightFlush comparison *)
-(*same as comparing a regular straight - which is not working yet*)
+(* StraightFlush comparison - returns the better hand *)
+(* same as comparing a regular straight *)
 let compare_straight_flush (h1:card list) (h2:card list) : card list =
   compare_straight h1 h2
 
@@ -373,15 +385,6 @@ let compare_straight_flush (h1:card list) (h2:card list) : card list =
 let compare_royal_flush (h1:card list) (h2:card list) : card list =
   let r = Random.int 2 in if r = 0 then h1 else h2
 
-(*above here works - except for exceptions*)
-
-(* A function for converting cards to a player's BEST POSSIBLE hand.
-* It will presumably be used extensively in the game to determine the winner
-* of the hand.  Gamestate will call this function on each player's hands
-* and then call compare on the two generated hands. Since this determines
-* the best possible hand, we need all 7 available cards,
-* the 2 from a player's hand and the 5 from the board.
-* It could be fewer than seven cards for AI but not fewer than 5*)
 let determine_best_hand (c:card list) : hand =
   if royal_flush_check c then (*checked*)
     let s = fst(most_common_suit c) in
@@ -392,7 +395,7 @@ let determine_best_hand (c:card list) : hand =
                                  else loop (h2::h3::h4::h5::t)
       | _ -> failwith "violated precondition"
     in loop c
-  else if straight_flush_check c then
+  else if straight_flush_check c then (*checked*)
     let s = fst(most_common_suit c) in
     let rec loop c2 =
       match (insertion_sort_suit (insertion_sort c2)) with
@@ -433,13 +436,21 @@ let determine_best_hand (c:card list) : hand =
         else loop (h2::h3::h4::h5::t) count
       | _ -> failwith "violated precondition"
     in loop c 0
-  else if straight_check c then (*checked*)
-    let s = fst(most_common_suit c) in
+  else if straight_check c then
     let rec loop c2 =
-      match (insertion_sort c2) with
-      | h1::h2::h3::h4::h5::t -> if suit_of_card h1 = s
+      let sorted = (insertion_sort (remove_dups c2)) in
+      match sorted with
+      | h1::h2::h3::h4::h5::t -> if one_step_below h2 h1 && one_step_below h3 h2
+                                 && one_step_below h4 h3 && one_step_below h5 h4
                                  then Straight ([h1;h2;h3;h4;h5])
-                                 else loop (h2::h3::h4::h5::t)
+                                 else if straight_check (h2::h3::h4::h5::t)
+                                 then loop (h2::h3::h4::h5::t)
+    else let ace = List.find (fun x -> value_to_string (val_of_card x) = "A") sorted in
+         let five = List.find (fun x -> value_to_string (val_of_card x) = "5") sorted in
+         let four = List.find (fun x -> value_to_string (val_of_card x) = "4") sorted in
+         let three = List.find (fun x -> value_to_string (val_of_card x) = "3") sorted in
+         let two = List.find (fun x -> value_to_string (val_of_card x) = "2") sorted in
+         Straight ([ace;five;four;three;two])
       | _ -> failwith "violated precondition"
     in loop c
   else if triple_check c then (*checked*)
@@ -485,7 +496,6 @@ let determine_best_hand (c:card list) : hand =
     | h1::h2::h3::h4::h5::t -> HighCard ([h1;h2;h3;h4;h5]) (*checked*)
     | _ -> failwith "violated precondition"
 
-(* working except for straight and straight flush *)
 let compare_hands (h1:hand) (h2:hand) : hand =
   match (h1,h2) with
   | (HighCard (_),HighCard (_)) -> determine_best_hand (compare_high_card
