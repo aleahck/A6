@@ -10,7 +10,7 @@ let point_standard g = match game_stage g with
   | Initial -> 15.
   | Flop    -> 40.
   | Turn    -> 55.
-  | River   -> 90.
+  | River   -> 70.
 
 let same_suit_bonus = function
   | h1::h2::[] -> if same_suit h1 h2 then 6. else 0.
@@ -98,9 +98,16 @@ let floor_bet_to_all_in bet g =
                            bet
   | _ -> bet
 
+let risk_factor g =
+  let _,ai = List.hd g.players in
+  let to_call = float_of_int(call_amount g) in
+  let stake = float_of_int(ai.stake) in
+  1. -. (to_call /. (to_call +. stake))
+
 let turn g =
   let _,ai = List.hd g.players in
-  let modified_points = (rand_multiplier ()) *. (hand_points g) in
+  let risk = (risk_factor g) *. (rand_multiplier()) in
+  let modified_points = risk *. (hand_points g) in
   let points_needed = (point_standard g) *. (pot_odds g) in
   let diff_in_points = int_of_float (modified_points -. points_needed) in
   let can_check = g.last_move = Check || 
