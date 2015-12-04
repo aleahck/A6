@@ -136,12 +136,14 @@ let rec play_game  (g: game)=
 	     else let betting= turn g in
 		  (if (betting.last_move = Deal)
 		   then betting
-		   else (let  betting2= choose_action (betting) in
-			 if betting2.last_move= Deal
-			 then betting2
-			 else add3_flop betting2
-
-		  )) in
+		   else let betting2= (if betting.last_move= Call
+					then choose_action 
+					       {betting with last_move= Check}
+					else choose_action betting) in
+		   if betting2.last_move= Deal
+		   then betting2
+		   else add3_flop betting2
+		  ) in
 	     play_game betting1
   |Flop|Turn-> let betting1= if (fst (List.hd (g.players))= "You")
 		 then (let betting= choose_action g in
