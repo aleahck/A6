@@ -42,7 +42,7 @@ if (end_betting g) then (print_string
 			   "\nThis round of betting has concluded. \n";g)
   else
   (print_string (game_to_string g);
-  print_string "\nEnter a command:\n";
+  print_string "\n\nEnter a command:\n";
   let command= read_line () in
   let first= first_word command in
   let second= try (second_word command) with
@@ -105,8 +105,7 @@ if (end_betting g) then (print_string
 					 g in
 			   choose_action raised
 		|"check"-> if is_valid_check g
-			   then (print_string "first check";
-				 let checked= (turn (check g)) in
+			   then (let checked= (turn (check g)) in
 				 if (checked.last_move=Check)
 				 then checked
 				 else choose_action (checked))
@@ -137,12 +136,14 @@ let rec play_game  (g: game)=
 	     else let betting= turn g in
 		  (if (betting.last_move = Deal)
 		   then betting
-		   else (let  betting2= choose_action (betting) in
-			 if betting2.last_move= Deal
-			 then betting2
-			 else add3_flop betting2
-
-		  )) in
+		   else let betting2= (if betting.last_move= Call
+					then choose_action 
+					       {betting with last_move= Check}
+					else choose_action betting) in
+		   if betting2.last_move= Deal
+		   then betting2
+		   else add3_flop betting2
+		  ) in
 	     play_game betting1
   |Flop|Turn-> let betting1= if (fst (List.hd (g.players))= "You")
 		 then (let betting= choose_action g in

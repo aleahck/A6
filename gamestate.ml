@@ -225,20 +225,22 @@ let rec string_of_plist lst acc =
 
 (* Returns the string of the stake, cards and bet of the player.
 * Helper function for game_to_string. *)
-let player_to_string (p:player) =
-  "Your stake is: " ^ (string_of_int p.stake) ^ "\n" ^
-  "Your cards are: " ^ (string_of_clist p.cards "") ^ "\n" ^
-  "You have bet: " ^ (string_of_int p.amount_in) ^ "\n"
+let player_to_string (g:game) (p:player) =
+  let can_check = g.bet - p.amount_in in
+  let p = "Your stake is: " ^ (string_of_int p.stake) ^ "\n" ^
+  "Your cards are: " ^ (string_of_clist p.cards "") ^ "\n" in
+
+  if can_check=0 then (p ^ "You can check") else
+  (p ^ "Calling will cost you: " ^ (string_of_int can_check))
 
 (* Returns the string of the flop, bet and pot fields of the game state. *)
 let game_to_string (g:game) =
   let c_list_string = if (string_of_clist g.flop "") = "" then "None"
     else (string_of_clist g.flop "") in
-  "The flop is: " ^ c_list_string ^ "\n" ^
+  "The board is: " ^ c_list_string ^ "\n" ^
   "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
   "The pot is: " ^ (string_of_int g.pot) ^ "\n\n" ^
-  (player_to_string (List.assoc "You" g.players)) ^ "\n" ^
-  (player_to_string (List.assoc "AI" g.players))
+  (player_to_string g (List.assoc "You" g.players))
 
 
 (* Only works for 2 players; only ends the hand instead of continuing hand

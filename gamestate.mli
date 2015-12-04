@@ -83,4 +83,4 @@ val make_game : unit-> game
 val game_to_string : game-> string
 
 (*Formats a player to a string for printing*)
-val player_to_string : player-> string
+val player_to_string : game-> player-> string
