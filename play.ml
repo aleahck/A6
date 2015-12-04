@@ -89,29 +89,29 @@ if (end_betting g) then (print_string
 					 "\nType EXIT to quit the game.\n\n") ;
 			      g
 		   |_->
-                     (print_string "\n\n\n Invalid input\n"; choose_action g) 
+                     (print_string "\n\n\n Invalid input\n"; choose_action g)
 	     end
   |Fold-> failwith "a new hand should have started from AI"
   |Deal-> begin match first with
-		|"call"-> if (is_valid_call g) 
+		|"call"-> if (is_valid_call g)
 			  then (let ai_went= turn (call g) in
-				if (ai_went.last_move= Check) 
+				if (ai_went.last_move= Check)
 				then ai_went
 				else choose_action ai_went)
 			  else  (print_string "\n\n\nInvalid input\n"; g)
 		|"raise"-> let raised= try play_raise g second with
 				       |Failure "int_of_string"->
-					 print_string "\n\n\nInvalid input\n"; 
+					 print_string "\n\n\nInvalid input\n";
 					 g in
 			   choose_action raised
-		|"check"-> if is_valid_check g 
+		|"check"-> if is_valid_check g
 			   then (print_string "first check";
 				 let checked= (turn (check g)) in
 				 if (checked.last_move=Check)
 				 then checked
 				 else choose_action (checked))
 			   else (print_string "\n\n\nInvalid input\n"; g)
-		|"fold"-> print_string "first fold";fold g
+		|"fold"-> fold g
 		|"exit"-> exit 0
 		|"rules"-> print_string
 			      ("\nRULES:\nYou can CALL, RAISE a number (i.e."^
@@ -133,7 +133,7 @@ let rec play_game  (g: game)=
 	     then let betting= choose_action g in
 		  (if (betting.last_move= Deal)
 		   then betting
-		   else( print_string "add3 after player";(add3_flop betting)))
+		   else(add3_flop betting))
 	     else let betting= turn g in
 		  (if (betting.last_move = Deal)
 		   then betting
@@ -144,8 +144,7 @@ let rec play_game  (g: game)=
 
 		  )) in
 	     play_game betting1
-  |Flop|Turn-> let betting1= print_string "IN FLOP/TURN";
-		 if (fst (List.hd (g.players))= "You")
+  |Flop|Turn-> let betting1= if (fst (List.hd (g.players))= "You")
 		 then (let betting= choose_action g in
 		       (if (betting.last_move= Deal) &&
 			     (not (end_betting betting))
@@ -159,8 +158,7 @@ let rec play_game  (g: game)=
 			       then betting2
 			       else add1_flop betting2)) in
 		       (play_game betting1)
-  |River-> print_string "IN RIVER \n" ;
-	   let betting1= if (fst (List.hd (g.players))= "You")
+  |River-> let betting1= if (fst (List.hd (g.players))= "You")
 			 then let betting= choose_action g in
 			      betting
 			 else let betting= turn g in
