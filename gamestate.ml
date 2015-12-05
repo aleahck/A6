@@ -97,7 +97,9 @@ let is_valid_call (g:game) =
 
 (* Returns false if the current player is unable to check. *)
 let is_valid_check (g:game) =
-  g.bet = (current_player g).amount_in
+  g.bet = (current_player g).amount_in &&
+  (g.last_move = Check || g.last_move = Deal && (game_stage g <> Initial) ||
+    (game_stage g = Initial && g.last_move = Call))
 
 (* Returns false if the current player is unable to raise the bet by i. *)
 let is_valid_raise (i:int) (g:game) =
@@ -226,12 +228,10 @@ let rec string_of_plist lst acc =
 (* Returns the string of the stake, cards and bet of the player.
 * Helper function for game_to_string. *)
 let player_to_string (g:game) (p:player) =
-  let can_check = g.bet - p.amount_in in
-  let p = "Your stake is: " ^ (string_of_int p.stake) ^ "\n" ^
+  let print = "Your stake is: " ^ (string_of_int p.stake) ^ "\n" ^
   "Your cards are: " ^ (string_of_clist p.cards "") ^ "\n" in
-
-  if can_check=0 then (p ^ "You can check") else
-  (p ^ "Calling will cost you: " ^ (string_of_int can_check))
+  if is_valid_check g then (print ^ "You can check") else
+  (print ^ "Calling will cost you: " ^ (string_of_int (g.bet - p.amount_in)))
 
 (* Returns the string of the flop, bet and pot fields of the game state. *)
 let game_to_string (g:game) =
@@ -240,7 +240,8 @@ let game_to_string (g:game) =
   "The board is: " ^ c_list_string ^ "\n" ^
   "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
   "The pot is: " ^ (string_of_int g.pot) ^ "\n\n" ^
-  (player_to_string g (List.assoc "You" g.players))
+  (player_to_string g (List.assoc "You" g.players)) ^ "\n" ^
+  (player_to_string g (List.assoc "AI" g.players)) ^ "\n"
 
 
 (* Only works for 2 players; only ends the hand instead of continuing hand
