@@ -12,8 +12,7 @@ amount_in: the amount the user has bet in the current hand as an int*)
 type player = {
     stake: int;
     mutable cards: card list;
-    amount_in: int;
-    did_raise:bool
+    amount_in: int
   }
 
 type id = string
