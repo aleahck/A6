@@ -71,34 +71,34 @@ let rec choose_action (g:game)=
      | Check, "check" -> check_no_snd g second check
      | Check, "raise" -> ( let raised = try play_raise g second with
                                         | Failure "int_of_string" -> 
-														  							( print_invalid() ; g) in
+                                            ( print_invalid() ; g) in
 			                     choose_action raised )
      | Check, "fold" -> check_no_snd g second fold 
      | Raise _, "raise" -> ( let raised = try play_raise g second with
                                           | Failure "int_of_string" ->
-																					    ( print_invalid() ; g) in
+                                              ( print_invalid() ; g) in
 			                       choose_action raised )
      | Raise _, "call" ->  check_no_snd g second call
      | Raise _, "fold" ->  check_no_snd g second fold
      | Fold, _ -> failwith "a new hand should have started from AI"
      | Deal, "call" -> ( let f g = if is_valid_call g then
-		                                 let ai_went = turn (call g) in
-		                                 if ai_went.last_move = Check then ai_went
+                                     let ai_went = turn (call g) in
+                                     if ai_went.last_move = Check then ai_went
                                      else choose_action ai_went
-	                                 else
-																		 ( print_invalid() ; g)
-									       in check_no_snd g second f )               
+                                   else
+                                     ( print_invalid() ; g)
+                         in check_no_snd g second f )               
      | Deal, "raise" -> ( let raised = try play_raise g second with
                                        | Failure "int_of_string" -> 
-													    						(print_invalid() ; g) in
-			                    if raised.last_move = Deal then raised
-													else choose_action raised )
+                                           (print_invalid() ; g) in
+                          if raised.last_move = Deal then raised
+                          else choose_action raised )
      | Deal, "check" -> ( let f g = if is_valid_check g then 
-		                                  let checked = turn(check g) in
-		                                  if checked.last_move = Check then checked
-																			else choose_action (checked)
-	                                  else 
-																			( print_invalid() ; g )
+                                      let checked = turn(check g) in
+                                      if checked.last_move = Check then checked
+                                      else choose_action (checked)
+                                    else 
+                                      ( print_invalid() ; g )
                           in check_no_snd g second f )
      | Deal, "fold" -> check_no_snd g second fold
      | _ -> (print_invalid() ; choose_action g) )
@@ -110,62 +110,62 @@ let rec choose_action (g:game)=
 let rec play_game  (g: game)=
   match game_stage g with
 	| Initial -> ( print_string "\nNEW ROUND OF BETTING\n";
-	               let betting1 =
-									 if get_current_id g = "You" then
-									   let betting = choose_action g in
-		                 if betting.last_move = Deal then betting
-		                 else add3_flop betting
-	                 else
-										 let betting = turn g in
-		                 if betting.last_move = Deal then 
-											 betting
-		                 else 
-											 let betting2 =
-												 if betting.last_move = Call then 
-													 choose_action {betting with last_move = Check}
-					               else 
-													 choose_action betting in
-			                 if betting2.last_move = Deal then betting2
-			                 else add3_flop betting2 in
-	               play_game betting1 )
+                 let betting1 =
+                   if get_current_id g = "You" then
+                     let betting = choose_action g in
+                     if betting.last_move = Deal then betting
+                     else add3_flop betting
+                   else
+                     let betting = turn g in
+                     if betting.last_move = Deal then 
+                       betting
+                     else 
+                       let betting2 =
+                         if betting.last_move = Call then 
+                           choose_action {betting with last_move = Check}
+                         else 
+                           choose_action betting in
+                       if betting2.last_move = Deal then betting2
+                       else add3_flop betting2 in
+                 play_game betting1 )
   | Flop | Turn -> ( print_string "\nNEW ROUND OF BETTING\n";
-	                   let betting1 =
-											 if get_current_id g = "You" then 
-											   let betting = choose_action g in
-				                 if betting.last_move = Deal
-												    && not (end_betting betting)
-	        		           then betting
-				                 else add1_flop betting
-			                 else  
-											   let betting = turn g in
-				                 if betting.last_move = Deal then
-												   betting
-				                 else 
-												   let betting2 = choose_action betting in
-					                 if betting2.last_move = Deal then betting2
-					                 else add1_flop betting2 in
-	                   play_game betting1 )
+                     let betting1 =
+                       if get_current_id g = "You" then 
+                         let betting = choose_action g in
+                         if betting.last_move = Deal
+                            && not (end_betting betting)
+                         then betting
+                         else add1_flop betting
+                       else  
+                         let betting = turn g in
+                         if betting.last_move = Deal then
+                           betting
+                         else 
+                           let betting2 = choose_action betting in
+                           if betting2.last_move = Deal then betting2
+                           else add1_flop betting2 in
+                     play_game betting1 )
   | River -> ( print_string "\nNEW ROUND OF BETTING\n" ;
-	             let betting1 = 
-								 if get_current_id g = "You" then
-									 choose_action g 
-			           else 
-									 let betting = turn g in
-			             if betting.last_move = Deal then betting
-			             else choose_action (betting) in
-	             let ggame =
-	               if betting1.last_move = Deal then
-									 betting1
-	               else 
-									 let the_winner,_ = winner betting1 in
-  		             print_string (winner_to_string betting1) ;
-  		             let new_ps = 
-										 if the_winner = get_current_id betting1 then
-											 List.rev betting1.players
-  			             else
-											 betting1.players in
-  		             fold {betting1 with players = new_ps} in
-	             play_game ggame )
+               let betting1 = 
+                 if get_current_id g = "You" then
+                   choose_action g 
+                 else 
+                   let betting = turn g in
+                   if betting.last_move = Deal then betting
+                   else choose_action (betting) in
+               let ggame =
+                 if betting1.last_move = Deal then
+                   betting1
+                 else 
+                   let the_winner,_ = winner betting1 in
+                   print_string (winner_to_string betting1) ;
+                   let new_ps = 
+                     if the_winner = get_current_id betting1 then
+                       List.rev betting1.players
+                     else
+                       betting1.players in
+                   fold {betting1 with players = new_ps} in
+               play_game ggame )
 
 
 (*The main function launches the game, creates a new game, and initializes the
