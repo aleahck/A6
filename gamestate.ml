@@ -121,8 +121,7 @@ let do_raise (g:game) (i:int)=
   in
   let new_player= do_player_raise g (current_player g) num in
   let p_id = get_current_id g in
-  let new_players= (print_string "rev list in do_raise";
-  (List.tl (g.players))@[(p_id,new_player)]) in
+  let new_players= (List.tl (g.players))@[(p_id,new_player)] in
   let difference= g.bet- (current_player g).amount_in in
   let new_pot = g.pot+ difference + num  in
   {flop= g.flop;
@@ -141,7 +140,7 @@ let call (g:game) =
 
 (* Changes the last move to Check  *)
 let check (g:game) =
-  { g with players = (print_string "rev player lst in check";List.rev g.players);
+  { g with players = List.rev g.players;
 	  last_move= Check
   }
 
@@ -157,8 +156,7 @@ let deal_two (g:game) =
   p1.cards <- fst (d1) ;
   p2.cards <- fst (d2) ;
   { g with
-    players = (print_string "keeping player list the same in deal_two";
-    [(fst(List.hd g.players),p1) ; (fst(List.nth g.players 1),p2)] );
+    players = ([(fst(List.hd g.players),p1) ; (fst(List.nth g.players 1),p2)] );
     deck = snd d2;
     last_move= Deal
   }
@@ -170,7 +168,7 @@ let undelt pfield g =
      pot = big_blind+little_blind;
      players= pfield;
      deck= rand_deck();
-     first_better= (print_string "rev first better list";List.rev g.first_better);
+     first_better= List.rev g.first_better;
      last_move= Deal
   }
 
@@ -187,8 +185,7 @@ let new_hand (g:game) =
   let new_start= List.hd g.first_better in
     let undealt1=
     if (new_start=fst_id)
-    then (print_string "keeping player list same in new_hand";
-      undelt
+    then (undelt
         ([(fst_id,{fst_player with
           stake = fst_player.stake - little_blind;
           amount_in = little_blind});
@@ -196,8 +193,7 @@ let new_hand (g:game) =
           stake = snd_player.stake - big_blind;
           amount_in = big_blind})])
         g)
-    else (print_string "rev player list in new_hand";
-      undelt
+    else (undelt
         ([(snd_id,{snd_player with
           stake = snd_player.stake - little_blind;
           amount_in = little_blind});
@@ -254,7 +250,7 @@ let fold (g:game) =
   let new_h = new_hand g in
   let continue = List.for_all (fun x -> (snd x).stake >=0) new_h.players in
   if continue
-    then (print_string ("\nA NEW HAND HAS BEGUN! \n\n");new_h)
+    then (print_string ("\nA NEW HAND HAS BEGUN!\n");new_h)
   else (if (current_player new_h).stake >=0 then
         (Printf.printf "\n%s won the game!\n" (get_current_id new_h); exit 0)
         else

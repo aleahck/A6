@@ -42,7 +42,7 @@ let check_no_snd g s f= if s= "" then f g
 *The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
 if (end_betting g) then (print_string
-			   "\nThis round of betting has concluded. \n";print_string"rev list in choose_action";
+			   "\nThis round of betting has concluded. \n";
        {g with players = List.rev g.players})
   else
   (print_string (game_to_string g);
@@ -118,7 +118,7 @@ if (end_betting g) then (print_string
 				       |Failure "int_of_string"->
 					 print_string "\n\n\nInvalid input\n";
 					 g in
-			   if (raised.last_move= Deal) 
+			   if (raised.last_move= Deal)
 			   then raised
 			   else choose_action raised
 		|"check"->  check_no_snd g second
@@ -203,8 +203,7 @@ let rec play_game  (g: game)=
 	    else (let the_winner= fst (winner betting1) in
   		  print_string (winner_to_string betting1);
   		  let new_ps= if (the_winner= get_current_id betting1)
-  			      then (print_string "rev player list in ggame";
-              List.rev betting1.players)
+  			      then (List.rev betting1.players)
   			      else betting1.players in
   		  fold {betting1 with players= new_ps}) in
 	  play_game ggame
