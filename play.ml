@@ -148,7 +148,7 @@ let rec play_game  (g: game)=
   match game_stage g with
   |Initial-> print_string "\nNEW ROUND OF BETTING\n";
 	     let betting1=
-	       if (fst (List.hd (g.players))= "You")
+	       if (get_current_id g= "You")
 	       then let betting= choose_action g in
 		    (if (betting.last_move= Deal)
 		     then betting
@@ -166,7 +166,7 @@ let rec play_game  (g: game)=
 		    ) in
 	     play_game betting1
   |Flop|Turn->print_string "\nNEW ROUND OF BETTING\n";
-	      let betting1= if (fst (List.hd (g.players))= "You")
+	      let betting1= if (get_current_id g= "You")
 			    then (let betting= choose_action g in
 				  (if (betting.last_move= Deal) &&
 					(not (end_betting betting))
@@ -181,7 +181,7 @@ let rec play_game  (g: game)=
 					 else add1_flop betting2)) in
 	      (play_game betting1)
   |River->print_string "\nNEW ROUND OF BETTING\n";
-	  let betting1= if (fst (List.hd (g.players))= "You")
+	  let betting1= if (get_current_id g= "You")
 			then let betting= choose_action g in
 			     betting
 			else let betting= turn g in
