@@ -277,6 +277,16 @@ let make_game () =
   last_move= Deal
   }
 
+(*helper function for checking if hands are the same
+* hands should only be 5 cards*)
+let check_same_hands (h1:hand) (h2:hand) : bool =
+  let cl1 = hand_to_card_list h1 in
+  let cl2 = hand_to_card_list h2 in
+  let rec loop lst =
+    match lst with
+    | [] -> true
+    | h::t -> if List.mem h cl2 then loop t else false
+  in loop cl1
 
 (* Returns a pair of the ID of the player that won the round and the best
 * hand. Helper function for winner_to_string. *)
@@ -285,7 +295,8 @@ let winner (g:game) =
   let h1 = determine_best_hand (p1.cards@g.flop) in
   let p2 = snd (List.nth g.players 1) in
   let h2 = determine_best_hand (p2.cards@g.flop) in
-  if (compare_hands h1 h2) = h1 then (fst (List.hd g.players), h1)
+  if check_same_hands (compare_hands h1 h2) h1
+  then (fst (List.hd g.players), h1)
   else (fst (List.nth g.players 1), h2)
 
 (* Returns a string of the best hand and the ID of the player that has it. *)
