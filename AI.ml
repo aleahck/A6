@@ -157,9 +157,6 @@ let turn g =
   let may_raise = match g.last_move with
                   | Raise i -> amount > i
                   | _       -> true in
-  Printf.printf "points %d " diff_in_points ;
-  Printf.printf "max_call %d" max_call ;
-  Printf.printf "may_raise %s" (string_of_bool may_raise) ;
   if can_check && diff_in_points <= max_call then
     (print_endline "" ;
      print_endline "|-------------|" ;

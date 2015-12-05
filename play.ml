@@ -72,7 +72,8 @@ let rec choose_action (g:game)=
      | Check, "raise" -> ( let raised = try play_raise g second with
                                         | Failure "int_of_string" -> 
                                             ( print_invalid() ; g) in
-			                     choose_action raised )
+                           if raised.last_move = Deal then raised 
+                           else choose_action raised )
      | Check, "fold" -> check_no_snd g second fold 
      | Raise _, "raise" -> ( let raised = try play_raise g second with
                                           | Failure "int_of_string" ->
