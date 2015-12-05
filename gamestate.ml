@@ -240,7 +240,8 @@ let game_to_string (g:game) =
   "The board is: " ^ c_list_string ^ "\n" ^
   "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
   "The pot is: " ^ (string_of_int g.pot) ^ "\n\n" ^
-  (player_to_string g (List.assoc "You" g.players))
+  (player_to_string g (List.assoc "You" g.players)) ^ "\n" ^
+  (player_to_string g (List.assoc "AI" g.players)) ^ "\n"
 
 
 (* Only works for 2 players; only ends the hand instead of continuing hand
