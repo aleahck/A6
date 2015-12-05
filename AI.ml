@@ -114,15 +114,12 @@ let rand_multiplier () = Random.self_init () ; (Random.float 0.5) +. 0.75
 (* [rand_call_bound_for_game g] returns a random number used to determine if
   *   the ai should call or raise based on the gamestage of [g] *)
 let rand_call_bound_for_game g =
-  if g.last_move = Deal then
-    0
-  else 
-    ( Random.self_init() ;
-      match game_stage g with
-      | Initial -> Random.int 10
-      | Flop    -> Random.int 20
-      | Turn    -> Random.int 30
-      | River   -> Random.int 40 )
+  Random.self_init() ;
+  match game_stage g with
+  | Initial -> Random.int 10
+  | Flop    -> Random.int 20
+  | Turn    -> Random.int 30
+  | River   -> Random.int 40 
 
 (* [floor_bet_to_all_in b g] chooses the max of [b] and the stake of each
  *   player in [g] *)
@@ -160,6 +157,9 @@ let turn g =
   let may_raise = match g.last_move with
                   | Raise i -> amount > i
                   | _       -> true in
+  Printf.printf "points %d " diff_in_points ;
+  Printf.printf "max_call %d" max_call ;
+  Printf.printf "may_raise %s" (string_of_bool may_raise) ;
   if can_check && diff_in_points <= max_call then
     (print_endline "" ;
      print_endline "|-------------|" ;
