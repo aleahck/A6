@@ -140,19 +140,24 @@ let risk_factor g =
   1. -. (to_call /. (to_call +. stake))
 
 let turn g =
-  let _,ai = List.hd g.players in
+  let stage = game_stage g in
   let risk = (risk_factor g) *. (rand_multiplier()) in
   let modified_points = risk *. (hand_points g) in
   let points_needed = (point_standard g) *. (pot_odds g) in
   let diff_in_points = int_of_float (modified_points -. points_needed) in
   let can_check = g.last_move = Check || 
-                  (g.last_move = Deal && (game_stage g) <> Initial) ||
-                  ((game_stage g) = Initial && g.last_move = Call) in
-  let can_raise = not ai.did_raise in
+                  (g.last_move = Deal && stage <> Initial) ||
+                  (stage = Initial && g.last_move = Call) in
   let rand_call_bound = rand_call_bound_for_game g in
   let to_call = call_amount g in
   let max_call = if rand_call_bound > to_call then rand_call_bound 
                  else to_call in
+  let to_raise = diff_in_points - to_call in
+  let amount = floor_bet_to_all_in to_raise g in
+  let may_raise = match g.last_move with
+                   | Raise i -> amount > i
+                   | _       -> true
+                   in
   if can_check && diff_in_points <= max_call then
     (print_endline "" ;
      print_endline "|-------------|" ;
@@ -171,7 +176,7 @@ let turn g =
      print_endline "|------------|" ; 
      print_endline "" ;
      fold g)
-  else if diff_in_points <= max_call || not can_raise then
+  else if diff_in_points <= max_call || may_raise then
     (print_endline "" ;
      print_endline "|------------|" ;
      print_endline "|            |" ;
@@ -181,8 +186,6 @@ let turn g =
      print_endline "" ;
      call g)
   else 
-    let to_raise = (diff_in_points - to_call) in
-    let amount = floor_bet_to_all_in to_raise g in
     let extra_dashes,extra_spaces = if amount / 100 > 0 then "---","   "
                                     else if amount / 10 > 0 then "--","  "
                                     else "-"," " in 
