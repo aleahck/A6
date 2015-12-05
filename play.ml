@@ -171,36 +171,38 @@ let rec play_game  (g: game)=
 		   else add3_flop betting2
 		  ) in
 	     play_game betting1
-  |Flop|Turn-> let betting1= if (fst (List.hd (g.players))= "You")
-		 then (let betting= choose_action g in
-		       (if (betting.last_move= Deal) &&
-			     (not (end_betting betting))
-	        	then betting
-			else add1_flop betting))
-		  else  let betting= turn g in
-			(if (betting.last_move = Deal)
-			 then (betting)
-			 else (let betting2= choose_action betting in
-			       if betting2.last_move= Deal
-			       then betting2
-			       else add1_flop betting2)) in
-		       (play_game betting1)
-  |River-> let betting1= if (fst (List.hd (g.players))= "You")
-			 then let betting= choose_action g in
-			      betting
-			 else let betting= turn g in
-			      (if (betting.last_move = Deal)
-			       then betting
-			       else (choose_action (betting)))in
-	   let ggame =
-	     if (betting1.last_move = Deal) then betting1
-	     else (let the_winner= fst (winner betting1) in
-  		   print_string (winner_to_string betting1);
-  		   let new_ps= if (the_winner= get_current_id betting1)
-  			       then List.rev betting1.players
-  			       else betting1.players in
-  		   {betting1 with players= new_ps}) in
-	   play_game (fold ggame)
+  |Flop|Turn->print_string "\nNEW ROUND OF BETTING\n";
+	      let betting1= if (fst (List.hd (g.players))= "You")
+			    then (let betting= choose_action g in
+				  (if (betting.last_move= Deal) &&
+					(not (end_betting betting))
+	        		   then betting
+				   else add1_flop betting))
+			    else  let betting= turn g in
+				  (if (betting.last_move = Deal)
+				   then (betting)
+				   else (let betting2= choose_action betting in
+					 if betting2.last_move= Deal
+					 then betting2
+					 else add1_flop betting2)) in
+	      (play_game betting1)
+  |River->print_string "\nNEW ROUND OF BETTING\n";
+	  let betting1= if (fst (List.hd (g.players))= "You")
+			then let betting= choose_action g in
+			     betting
+			else let betting= turn g in
+			     (if (betting.last_move = Deal)
+			      then betting
+			      else (choose_action (betting)))in
+	  let ggame =
+	    if (betting1.last_move = Deal) then betting1
+	    else (let the_winner= fst (winner betting1) in
+  		  print_string (winner_to_string betting1);
+  		  let new_ps= if (the_winner= get_current_id betting1)
+  			      then List.rev betting1.players
+  			      else betting1.players in
+  		  {betting1 with players= new_ps}) in
+	  play_game (fold ggame)
 
 
 (*The main function launches the game, creates a new game, and initializes the
