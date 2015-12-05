@@ -117,7 +117,6 @@ if (end_betting g) then (print_string
 				       |Failure "int_of_string"->
 					 print_string "\n\n\nInvalid input\n";
 					 g in
-			   choose_action raised
 		|"check"->  check_no_snd g second 
 				     (fun x->if is_valid_check x
 					     then (let checked= 
