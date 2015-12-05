@@ -16,7 +16,7 @@ let game_stage g =
 let first_word command =
   let lower_trimmed = String.trim (String.lowercase command) in
   let space = try String.index lower_trimmed ' ' with
-	            | Not_found -> String.length lower_trimmed in
+              | Not_found -> String.length lower_trimmed in
   String.sub lower_trimmed 0 space
 
 (*Takes in a command as a string and returns a string containing only the
@@ -24,7 +24,7 @@ let first_word command =
 let second_word command =
   let lower_trimmed = String.trim (String.lowercase command) in
   let space = try String.index lower_trimmed ' ' with
-	            | Not_found -> failwith "nope" in
+              | Not_found -> failwith "nope" in
 	let index = (String.length lower_trimmed) - space in
   let untrimmed = String.sub lower_trimmed space index in
   String.trim untrimmed
@@ -34,9 +34,9 @@ let print_invalid () = print_string "\n\n\n Invalid input\n"
 
 (* prints the rules *)
 let print_rules () = 
-	print_string("\nRULES:\nYou can CALL, RAISE a number (i.e."^
-				       "raise 20), FOLD, or CHECK during your turn.\nType RULES"^
-              " to see the rules again.\nType EXIT to quit the game.\n\n")  
+  print_string("\nRULES:\nYou can CALL, RAISE a number (i.e."^
+               "raise 20), FOLD, or CHECK during your turn.\nType RULES"^
+               " to see the rules again.\nType EXIT to quit the game.\n\n")  
 
 (*[play_raise g second]  if the integer form of [second] is a valid raise
 *for the current player of [g], [play_raise g second] will raise by that 
@@ -50,36 +50,36 @@ let play_raise g second =
 (*[check_no_snd g s f] will apply [f] to game [g] if [s] is empty and
 * prompt the user for a new command and return [g] otherwise*)
 let check_no_snd g s f = 
-	if s = "" then f g else (print_invalid() ; g) 
+  if s = "" then f g else (print_invalid() ; g) 
 		
 (*[choose_action g] will perform a single player move in a round of betting.
 *The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
   if end_betting g then 
-		{g with players = List.rev g.players}
+    {g with players = List.rev g.players}
   else (
      print_string (game_to_string g) ;
      print_string "\n\nEnter a command:\n" ;
      let command = read_line () in
      let first = first_word command in
      let second = try (second_word command) with
-	                | Failure "nope" -> "" in
+                  | Failure "nope" -> "" in
      match g.last_move, first with
-		 | _, "exit" -> exit 0
-		 | _, "rules" -> check_no_snd g second ( fun x -> print_rules() ; x)
+     | _, "exit" -> exit 0
+     | _, "rules" -> check_no_snd g second ( fun x -> print_rules() ; x)
      | Call, _ -> failwith "Should have been caught in if"
      | Check, "check" -> check_no_snd g second check
-		 | Check, "raise" -> ( let raised = try play_raise g second with
-				                                | Failure "int_of_string" -> 
+     | Check, "raise" -> ( let raised = try play_raise g second with
+                                        | Failure "int_of_string" -> 
 														  							( print_invalid() ; g) in
 			                     choose_action raised )
-		 | Check, "fold" -> check_no_snd g second fold 
-		 | Raise _, "raise" -> ( let raised = try play_raise g second with
-					                                | Failure "int_of_string" ->
+     | Check, "fold" -> check_no_snd g second fold 
+     | Raise _, "raise" -> ( let raised = try play_raise g second with
+                                          | Failure "int_of_string" ->
 																					    ( print_invalid() ; g) in
 			                       choose_action raised )
-		 | Raise _, "call" ->  check_no_snd g second call
-		 | Raise _, "fold" ->  check_no_snd g second fold
+     | Raise _, "call" ->  check_no_snd g second call
+     | Raise _, "fold" ->  check_no_snd g second fold
      | Fold, _ -> failwith "a new hand should have started from AI"
      | Deal, "call" -> ( let f g = if is_valid_call g then
 		                                 let ai_went = turn (call g) in
@@ -88,19 +88,19 @@ let rec choose_action (g:game)=
 	                                 else
 																		 ( print_invalid() ; g)
 									       in check_no_snd g second f )               
-		 | Deal, "raise" -> ( let raised = try play_raise g second with
-				                               | Failure "int_of_string" -> 
+     | Deal, "raise" -> ( let raised = try play_raise g second with
+                                       | Failure "int_of_string" -> 
 													    						(print_invalid() ; g) in
 			                    if raised.last_move = Deal then raised
 													else choose_action raised )
-		 | Deal, "check" -> ( let f g = if is_valid_check g then 
+     | Deal, "check" -> ( let f g = if is_valid_check g then 
 		                                  let checked = turn(check g) in
 		                                  if checked.last_move = Check then checked
 																			else choose_action (checked)
 	                                  else 
 																			( print_invalid() ; g )
                           in check_no_snd g second f )
-		 | Deal, "fold" -> check_no_snd g second fold
+     | Deal, "fold" -> check_no_snd g second fold
      | _ -> (print_invalid() ; choose_action g) )
 
 
@@ -109,7 +109,7 @@ let rec choose_action (g:game)=
 *when someone wins or exits*)
 let rec play_game  (g: game)=
   match game_stage g with
-  | Initial -> ( print_string "\nNEW ROUND OF BETTING\n";
+	| Initial -> ( print_string "\nNEW ROUND OF BETTING\n";
 	               let betting1 =
 									 if get_current_id g = "You" then
 									   let betting = choose_action g in

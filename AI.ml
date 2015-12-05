@@ -176,7 +176,7 @@ let turn g =
      print_endline "|------------|" ; 
      print_endline "" ;
      fold g)
-  else if diff_in_points <= max_call || may_raise then
+  else if diff_in_points <= max_call || not (may_raise) then
     (print_endline "" ;
      print_endline "|------------|" ;
      print_endline "|            |" ;
