@@ -426,16 +426,14 @@ let determine_best_hand (c:card list) : hand =
     in loop c []
   else if flush_check c then (*checked*)
     let s = fst(most_common_suit c) in
-    let rec loop c2 count=
+    let rec loop c2 =
       match (insertion_sort_suit c2) with
       | h1::h2::h3::h4::h5::t ->
-        if suit_of_card h1 = s && t = []
+        if suit_of_card h1 = s 
         then Flush ([h1;h2;h3;h4;h5])
-        else if suit_of_card h1 = s && t <> [] && count = 0
-        then loop (insertion_sort (h1::h2::h3::h4::h5::t)) (count + 1)
-        else loop (h2::h3::h4::h5::t) count
+        else loop (h2::h3::h4::h5::t) 
       | _ -> failwith "violated precondition"
-    in loop c 0
+    in loop c 
   else if straight_check c then
     let rec loop c2 =
       let sorted = (insertion_sort (remove_dups c2)) in

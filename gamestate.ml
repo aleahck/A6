@@ -65,8 +65,8 @@ let add1_flop (g:game) =
 (* Adds 3 cards to the flop (for new hands). *)
 let add3_flop (g:game) =
   let d1 = top3_cards g.deck in
-  let new_first = (if ((List.hd g.first_better) = fst (List.hd g.players))
-    then List.rev (raise_false g.players)
+  let new_first = (if ((List.nth g.first_better 1) = fst (List.hd g.players))
+    then (print_string "rev player list in add3_flop";List.rev (raise_false g.players))
     else (raise_false g.players)) in
   {g with deck = snd d1; flop = fst d1; players = new_first; last_move = Deal}
 
@@ -98,7 +98,7 @@ let is_valid_call (g:game) =
 (* Returns false if the current player is unable to check. *)
 let is_valid_check (g:game) =
   g.bet = (current_player g).amount_in &&
-  (g.last_move = Check || g.last_move = Deal && (game_stage g <> Initial) ||
+  ((g.last_move = Check) || (g.last_move = Deal && (game_stage g <> Initial)) ||
     (game_stage g = Initial && g.last_move = Call))
 
 (* Returns false if the current player is unable to raise the bet by i. *)
@@ -117,7 +117,8 @@ let do_raise (g:game) (i:int)=
   in
   let new_player= do_player_raise g (current_player g) num in
   let p_id = get_current_id g in
-  let new_players= (List.tl (g.players))@[(p_id,new_player)] in
+  let new_players= (print_string "rev list in do_raise";
+  (List.tl (g.players))@[(p_id,new_player)]) in
   let difference= g.bet- (current_player g).amount_in in
   let new_pot = g.pot+ difference + num  in
   {flop= g.flop;
@@ -136,8 +137,7 @@ let call (g:game) =
 
 (* Changes the last move to Check  *)
 let check (g:game) =
-  { g with players = (List.tl g.players)@
-    [((get_current_id g),(current_player g))];
+  { g with players = (print_string "rev player lst in check";List.rev g.players);
 	  last_move= Check
   }
 
@@ -153,7 +153,8 @@ let deal_two (g:game) =
   p1.cards <- fst (d1) ;
   p2.cards <- fst (d2) ;
   { g with
-    players = [(fst(List.hd g.players),p1) ; (fst(List.nth g.players 1),p2)] ;
+    players = (print_string "keeping player list the same in deal_two";
+    [(fst(List.hd g.players),p1) ; (fst(List.nth g.players 1),p2)] );
     deck = snd d2;
     last_move= Deal
   }
@@ -165,7 +166,7 @@ let undelt pfield g =
      pot = big_blind+little_blind;
      players= pfield;
      deck= rand_deck();
-     first_better= (List.tl g.first_better)@ [List.hd g.first_better];
+     first_better= (print_string "rev first better list";List.rev g.first_better);
      last_move= Deal
   }
 
@@ -180,29 +181,28 @@ let new_hand (g:game) =
   let snd_player=
     {snd_player1 with stake = snd_player1.stake + g.pot; did_raise= false} in
   let new_start= List.hd g.first_better in
-  let undealt1=
+    let undealt1=
     if (new_start=fst_id)
-    then
+    then (print_string "keeping player list same in new_hand";
       undelt
-	      ([(fst_id,{fst_player with
-  		    stake = fst_player.stake - little_blind;
-  		    amount_in = little_blind});
-	      (snd_id,{snd_player with
-  		    stake = snd_player.stake - big_blind;
-  	      amount_in = big_blind})])
-	      g
-    else
+        ([(fst_id,{fst_player with
+          stake = fst_player.stake - little_blind;
+          amount_in = little_blind});
+        (snd_id,{snd_player with
+          stake = snd_player.stake - big_blind;
+          amount_in = big_blind})])
+        g)
+    else (print_string "rev player list in new_hand";
       undelt
-	      ([(snd_id,{snd_player with
-		      stake = snd_player.stake - little_blind;
-		      amount_in = little_blind});
-	      (fst_id,{fst_player with
-		      stake = fst_player.stake - big_blind;
-		      amount_in = big_blind})])
-	      g
+        ([(snd_id,{snd_player with
+          stake = snd_player.stake - little_blind;
+          amount_in = little_blind});
+        (fst_id,{fst_player with
+          stake = fst_player.stake - big_blind;
+          amount_in = big_blind})])
+        g)
   in
     deal_two undealt1
-
 
 (* Turns card list into string. Helper function for to_string functions *)
 let rec string_of_clist lst acc =
@@ -230,8 +230,8 @@ let rec string_of_plist lst acc =
 let player_to_string (g:game) (p:player) =
   let print = "Your stake is: " ^ (string_of_int p.stake) ^ "\n" ^
   "Your cards are: " ^ (string_of_clist p.cards "") ^ "\n" in
-  if is_valid_check g then (print ^ "You can check") else
-  (print ^ "Calling will cost you: " ^ (string_of_int (g.bet - p.amount_in)))
+  if (is_valid_check g) then (print ^ "You can check")
+  else print ^ "Calling will cost you: " ^ (string_of_int (g.bet - p.amount_in))
 
 (* Returns the string of the flop, bet and pot fields of the game state. *)
 let game_to_string (g:game) =
