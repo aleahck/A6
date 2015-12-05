@@ -206,8 +206,8 @@ let rec play_game  (g: game)=
   			      then (print_string "rev player list in ggame";
               List.rev betting1.players)
   			      else betting1.players in
-  		  {betting1 with players= new_ps}) in
-	  play_game (fold ggame)
+  		  fold {betting1 with players= new_ps}) in
+	  play_game ggame
 
 
 (*The main function launches the game, creates a new game, and initializes the
