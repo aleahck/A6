@@ -4,7 +4,7 @@ open Gamestate
 (*[game_stage g] takes in a game [g] and returns a gamestage determined by how
 *many cards have are in [g.flop]*)
 let game_stage g =
-  	match g.flop with
+    match g.flop with
     | a::b::c::d::e::[] -> River
     | a::b::c::d::[] -> Turn
     | a::b::c::[] -> Flop
@@ -43,9 +43,9 @@ let print_rules () =
 *int. If second is not a number or is not a valid raise, [play_raise g second]
 * will prompt the player for a new command and return [g]*)
 let play_raise g second =
- 	let num = int_of_string second in
-	if (is_valid_raise num g) then turn (do_raise g num) 
-	else (print_invalid() ; g)
+  let num = int_of_string second in
+  if (is_valid_raise num g) then turn (do_raise g num) 
+  else (print_invalid() ; g)
 
 (*[check_no_snd g s f] will apply [f] to game [g] if [s] is empty and
 * prompt the user for a new command and return [g] otherwise*)
