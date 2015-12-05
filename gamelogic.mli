@@ -16,6 +16,9 @@ HighCard of card list
 
 (*functions*)
 
+(* converts a hand to a card list *)
+val hand_to_card_list : hand -> card list
+
 (* A function for converting cards to a player's BEST POSSIBLE hand.
 * It will presumably be used extensively in the game to determine the winner
 * of the hand.  Gamestate will call this function on each player's hands

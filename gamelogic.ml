@@ -38,7 +38,6 @@ let insertion_sort (l:card list) : card list =
 let insertion_sort_suit (l:card list) : card list =
   insertion_sort_abstract l suit_of_card
 
-(* converts a hand to a card list *)
 let hand_to_card_list (h:hand) : card list =
   match h with
   | HighCard clist -> clist
@@ -98,19 +97,19 @@ let royal_flush_check (c:card list) : bool =
 let straight_flush_check (c:card list) : bool =
   let s,_ = most_common_suit c in
   if List.mem (card_of_string ("A "^suit_to_string s)) c
-     && List.mem (card_of_string ("5 "^suit_to_string s)) c 
-     && List.mem (card_of_string ("4 "^suit_to_string s)) c 
-     && List.mem (card_of_string ("3 "^suit_to_string s)) c 
-     && List.mem (card_of_string ("2 "^suit_to_string s)) c 
+     && List.mem (card_of_string ("5 "^suit_to_string s)) c
+     && List.mem (card_of_string ("4 "^suit_to_string s)) c
+     && List.mem (card_of_string ("3 "^suit_to_string s)) c
+     && List.mem (card_of_string ("2 "^suit_to_string s)) c
   then true
   else
     let rec loop clist =
       match clist with
-      | h1::h2::h3::h4::h5::t -> ( if one_step_below h2 h1 
-                                      && one_step_below h3 h2 
-                                      && one_step_below h4 h3 
-                                      && one_step_below h5 h4 
-                                      && same_suit h1 h2 && same_suit h2 h3 
+      | h1::h2::h3::h4::h5::t -> ( if one_step_below h2 h1
+                                      && one_step_below h3 h2
+                                      && one_step_below h4 h3
+                                      && one_step_below h5 h4
+                                      && same_suit h1 h2 && same_suit h2 h3
                                       && same_suit h3 h4 && same_suit h4 h5
                                    then true
                                    else loop (h2::h3::h4::h5::t) )
@@ -122,8 +121,8 @@ let straight_flush_check (c:card list) : bool =
 * value of the cards that make up the four of a kind*)
 let rec quads_check (c:card list) : bool * value option =
   match (insertion_sort c) with
-  | h1::h2::h3::h4::t -> ( if val_of_card h1 = val_of_card h2 
-                              && val_of_card h2 = val_of_card h3 
+  | h1::h2::h3::h4::t -> ( if val_of_card h1 = val_of_card h2
+                              && val_of_card h2 = val_of_card h3
                               && val_of_card h3 = val_of_card h4
                            then (true,Some (val_of_card h1))
                            else quads_check (h2::h3::h4::t) )
@@ -151,20 +150,20 @@ let low_straight (c:card list) : bool =
 (*check if a card list contains a straight *)
 let straight_check (c:card list) : bool =
   let vlist = List.map val_of_card c in
-  if List.mem (value_of_string "A") vlist 
-     && List.mem (value_of_string "5") vlist 
-     && List.mem (value_of_string "4") vlist 
-     && List.mem (value_of_string "3") vlist 
+  if List.mem (value_of_string "A") vlist
+     && List.mem (value_of_string "5") vlist
+     && List.mem (value_of_string "4") vlist
+     && List.mem (value_of_string "3") vlist
      && List.mem (value_of_string "2") vlist
-  then true 
+  then true
   else
     let rec loop clist =
       match clist with
-      | h1::h2::h3::h4::h5::t -> ( if one_step_below h2 h1 
-                                      && one_step_below h3 h2 
-                                      && one_step_below h4 h3 
+      | h1::h2::h3::h4::h5::t -> ( if one_step_below h2 h1
+                                      && one_step_below h3 h2
+                                      && one_step_below h4 h3
                                       && one_step_below h5 h4
-                                   then true 
+                                   then true
                                    else loop (h2::h3::h4::h5::t) )
       | _ -> false
     in loop (insertion_sort (remove_dups c))
@@ -179,7 +178,7 @@ let rec triple_check (c:card list) : bool =
                          let v1 = val_of_card h1 in
                          let v2 = val_of_card h2 in
                          let v3 = val_of_card h3 in
-                         if v1 = v2 && v2 = v3 
+                         if v1 = v2 && v2 = v3
                             && not (List.mem v1 vt)
                             && not (List.mem v1 vacc)
                          then true
@@ -215,7 +214,7 @@ let two_pair_check (c:card list) : bool =
     match clist with
     | [] -> acc > 1
     | h::[] -> acc > 1
-    | h1::h2::t -> ( if pair_check [h1;h2] then loop t (acc+1) 
+    | h1::h2::t -> ( if pair_check [h1;h2] then loop t (acc+1)
                      else loop (h2::t) acc )
   in loop (insertion_sort c) 0
 
@@ -251,9 +250,9 @@ let value_of_pair (h:card list) : value =
   let vt = value_of_triple h in
   let rec loop hnd =
     match hnd with
-    | h1::h2::t -> ( if same_value h1 h2 
+    | h1::h2::t -> ( if same_value h1 h2
                         && (vt = None || not(Some (val_of_card h1) = vt))
-                     then val_of_card h1 
+                     then val_of_card h1
                      else loop (h2::t) )
     | _ -> failwith "violated precondition"
   in loop h
@@ -266,7 +265,7 @@ let compare_pair (h1:card list) (h2:card list) : card list =
   let v2 = value_of_pair sorted_h2 in
   if v1 > v2 then h1
   else if v1 < v2 then h2
-  else 
+  else
     let rec loop hnd1 hnd2 =
       match hnd1, hnd2 with
       | ([],[]) -> ( let r = Random.int 2 in
@@ -304,8 +303,8 @@ let compare_two_pair (h1:card list) (h2:card list) : card list =
         | (x1::xs1,x2::xs2) -> (if (val_of_card x1 = val_of_card x2) then
                                   loop xs1 xs2
                                 else if compare_high_card [x1] [x2] = [x1] then
-                                  h1 
-                                else 
+                                  h1
+                                else
                                   h2 )
       in loop sorted_h1 sorted_h2
 
@@ -326,7 +325,7 @@ let compare_triple (h1:card list) (h2:card list) : card list =
       | ([],x::xs) -> h2
       | (x1::xs1,x2::xs2) -> ( if v1 = Some (val_of_card x1) then
                                  loop xs1 xs2
-                               else if (val_of_card x1) < (val_of_card x2) then 
+                               else if (val_of_card x1) < (val_of_card x2) then
                                  h2
                                else
                                  h1 )
@@ -363,9 +362,9 @@ let compare_flush (h1:card list) (h2:card list) : card list =
     | (x::xs,[]) -> h1
     | ([],x::xs) -> h2
     | (x1::xs1,x2::xs2) -> ( if val_of_card x1 <> val_of_card x2
-                                && suit_of_card x1 = s1 
+                                && suit_of_card x1 = s1
                                 && suit_of_card x2 = s2
-                             then 
+                             then
                                ( if compare_high_card [x1] [x2] = [x1] then h1
                                  else h2 )
                              else loop xs1 xs2 )
@@ -377,7 +376,7 @@ let compare_full_house (h1:card list) (h2:card list) : card list =
   let tripleValue2 = value_of_triple h2 in
   if tripleValue1 > tripleValue2 then h1
   else if tripleValue1 < tripleValue2 then h2
-  else 
+  else
     let rec loop hnd1 hnd2 =
       match hnd1,hnd2 with
       | ([],[]) -> ( let r = Random.int 2 in
@@ -403,9 +402,9 @@ let rec compare_quads (h1:card list) (h2:card list) : card list =
                                 let vx2 = val_of_card x2 in
                                 let vy1 = val_of_card y1 in
                                 let vy2 = val_of_card y2 in
-                                if vx1 = vx2 && vy1 = vy2 then 
+                                if vx1 = vx2 && vy1 = vy2 then
                                   ( if vx1 = vy2 then compare_high_card h1 h2
-                                    else if vx1 > vy2 then h1 
+                                    else if vx1 > vy2 then h1
                                     else h2 )
                                 else compare_quads (x2::t1) (y2::t2) )
   | _ -> failwith "incorrect input to function"
@@ -466,22 +465,22 @@ let determine_best_hand (c:card list) : hand =
     let s,_ = most_common_suit c in
     let rec loop c2 =
       match c2 with
-      | h1::h2::h3::h4::h5::t -> ( if suit_of_card h1 = s 
+      | h1::h2::h3::h4::h5::t -> ( if suit_of_card h1 = s
                                    then Flush ([h1;h2;h3;h4;h5])
-                                   else loop (h2::h3::h4::h5::t) ) 
+                                   else loop (h2::h3::h4::h5::t) )
       | _ -> failwith "violated precondition"
-    in loop (insertion_sort_suit c) 
+    in loop (insertion_sort_suit c)
   else if straight_check c then
     let sorted_c = insertion_sort(remove_dups c) in
-    let find v = List.find (fun x -> (val_of_card x) = v) sorted_c in 
+    let find v = List.find (fun x -> (val_of_card x) = v) sorted_c in
     let rec loop c2 =
       match c2 with
-      | h1::h2::h3::h4::h5::t -> ( if one_step_below h2 h1 
+      | h1::h2::h3::h4::h5::t -> ( if one_step_below h2 h1
                                       && one_step_below h3 h2
-                                      && one_step_below h4 h3 
+                                      && one_step_below h4 h3
                                       && one_step_below h5 h4
                                    then Straight ([h1;h2;h3;h4;h5])
-                                   else if straight_check (h2::h3::h4::h5::t) 
+                                   else if straight_check (h2::h3::h4::h5::t)
                                    then loop (h2::h3::h4::h5::t)
                                    else
                                      let ace = find (value_of_string "A") in
