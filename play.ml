@@ -41,9 +41,7 @@ let check_no_snd g s f= if s= "" then f g
 (*[choose_action g] will perform a single player move in a round of betting.
 *The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
-if (end_betting g) then (print_string
-			   "\nThis round of betting has concluded. \n";
-       {g with players = List.rev g.players})
+if (end_betting g) then {g with players = List.rev g.players}
   else
   (print_string (game_to_string g);
   print_string "\n\nEnter a command:\n";
@@ -54,10 +52,7 @@ if (end_betting g) then (print_string
   match g.last_move with
   |Call->failwith "Should have been caught in if"
   |Check->begin match first with
-		|"check"-> check_no_snd g second (fun x->(print_string
-			       ("\nThis round of betting has concluded\n");
-			     check x))
-
+		|"check"-> check_no_snd g second (fun x->check x)
 		|"raise"-> let raised= try play_raise g second with
 				       |Failure "int_of_string"->
 					 (print_string
@@ -83,12 +78,7 @@ if (end_betting g) then (print_string
 					      "\n\n\n Invalid input\n"; g in
 			      choose_action raised
 		   |"call"->  check_no_snd g second
-				       (fun x->print_string
-					     ("\nThis round of betting has"^
-						"concluded"^
-						  "because the player"^
-						    "called\n\n");
-					       call x)
+				       (fun x->call x)
 		   |"fold"->  check_no_snd g second
 				       (fun x-> print_string
 						  "raise followed by fold";
