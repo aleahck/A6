@@ -35,25 +35,26 @@ let play_raise g second= let num= int_of_string second in
 					   (print_string
 					      "\n\n\n Invalid input\n"; g)
 
-let check_no_snd g s f= if s= "" then f g 
-			else (print_string "\n\n\n Invalid input\n";g)  
+let check_no_snd g s f= if s= "" then f g
+			else (print_string "\n\n\n Invalid input\n";g)
 
 (*[choose_action g] will perform a single player move in a round of betting.
 *The round will continue until someone calls, or two people check.*)
 let rec choose_action (g:game)=
 if (end_betting g) then (print_string
-			   "\nThis round of betting has concluded. \n";g)
+			   "\nThis round of betting has concluded. \n";print_string"rev list in choose_action";
+       {g with players = List.rev g.players})
   else
   (print_string (game_to_string g);
   print_string "\n\nEnter a command:\n";
   let command= read_line () in
   let first= first_word command in
-  let second= try (second_word command) with 
+  let second= try (second_word command) with
 	      |Failure "nope"-> "" in
   match g.last_move with
   |Call->failwith "Should have been caught in if"
   |Check->begin match first with
-		|"check"-> check_no_snd g second (fun x->(print_string 
+		|"check"-> check_no_snd g second (fun x->(print_string
 			       ("\nThis round of betting has concluded\n");
 			     check x))
 
@@ -62,11 +63,11 @@ if (end_betting g) then (print_string
 					 (print_string
 					    "\n\n\n Invalid input\n";g) in
 			   choose_action raised
-		|"fold"-> check_no_snd g second 
-				   (fun x-> print_string 
+		|"fold"-> check_no_snd g second
+				   (fun x-> print_string
 					      "check then fold";fold x)
 		|"exit"-> exit 0
-		|"rules"->  check_no_snd g second 
+		|"rules"->  check_no_snd g second
 				   (fun x-> print_string
 			      ("\nRULES:\nYou can CALL, RAISE a number (i.e."^
 				 "raise 20), FOLD, or CHECK"^
@@ -81,19 +82,19 @@ if (end_betting g) then (print_string
 					    print_string
 					      "\n\n\n Invalid input\n"; g in
 			      choose_action raised
-		   |"call"->  check_no_snd g second 
+		   |"call"->  check_no_snd g second
 				       (fun x->print_string
 					     ("\nThis round of betting has"^
 						"concluded"^
 						  "because the player"^
 						    "called\n\n");
 					       call x)
-		   |"fold"->  check_no_snd g second 
-				       (fun x-> print_string 
-						  "raise followed by fold"; 
+		   |"fold"->  check_no_snd g second
+				       (fun x-> print_string
+						  "raise followed by fold";
 						fold x)
 		   |"exit"-> exit 0
-		   |"rules"->  check_no_snd g second 
+		   |"rules"->  check_no_snd g second
 				   (fun x-> print_string
 				("\nRULES:\nYou can CALL, RAISE a number (i.e."^
 				   "raise 20), FOLD, or CHECK "^
@@ -106,7 +107,7 @@ if (end_betting g) then (print_string
 	     end
   |Fold-> failwith "a new hand should have started from AI"
   |Deal-> begin match first with
-		|"call"->  check_no_snd g second 
+		|"call"->  check_no_snd g second
 				   (fun x-> if (is_valid_call x)
 			  then (let ai_went= turn (call x) in
 				if (ai_went.last_move= Check)
@@ -118,20 +119,20 @@ if (end_betting g) then (print_string
 					 print_string "\n\n\nInvalid input\n";
 					 g in
 			   choose_action raised
-		|"check"->  check_no_snd g second 
+		|"check"->  check_no_snd g second
 				     (fun x->if is_valid_check x
-					     then (let checked= 
+					     then (let checked=
 						     (turn (check x)) in
 						   if (checked.last_move=Check)
 						   then checked
 						   else choose_action (checked))
-					     else (print_string 
-						     "\n\n\nInvalid input\n"; 
+					     else (print_string
+						     "\n\n\nInvalid input\n";
 						   x))
-		|"fold"->  check_no_snd g second 
+		|"fold"->  check_no_snd g second
 				   (fun x-> fold x)
 		|"exit"-> exit 0
-		|"rules"->  check_no_snd g second 
+		|"rules"->  check_no_snd g second
 				     (fun x-> print_string
 						("\nRULES:\nYou can CALL,"^
 						   "RAISE a number (i.e."^
@@ -154,7 +155,7 @@ if (end_betting g) then (print_string
 let rec play_game  (g: game)=
   match game_stage g with
   |Initial-> print_string "\nNEW ROUND OF BETTING\n";
-	     let betting1= 
+	     let betting1=
 	       if (fst (List.hd (g.players))= "You")
 	       then let betting= choose_action g in
 		    (if (betting.last_move= Deal)
@@ -164,7 +165,7 @@ let rec play_game  (g: game)=
 		    (if (betting.last_move = Deal)
 		     then betting
 		     else let betting2= (if betting.last_move= Call
-					 then choose_action 
+					 then choose_action
 						{betting with last_move= Check}
 					 else choose_action betting) in
 			  if betting2.last_move= Deal
@@ -200,7 +201,8 @@ let rec play_game  (g: game)=
 	    else (let the_winner= fst (winner betting1) in
   		  print_string (winner_to_string betting1);
   		  let new_ps= if (the_winner= get_current_id betting1)
-  			      then List.rev betting1.players
+  			      then (print_string "rev player list in ggame";
+              List.rev betting1.players)
   			      else betting1.players in
   		  {betting1 with players= new_ps}) in
 	  play_game (fold ggame)
