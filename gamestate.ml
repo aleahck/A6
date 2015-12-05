@@ -7,20 +7,40 @@ open Gamelogic
 *cards are out, Turn when 4 and River when 5.*)
 type gamestage= Initial | Flop | Turn | River
 
+(*Type player contains user data including fields for
+*stake: the total amount of money the user has as an int
+*cards: a pair of cards the user has in their hand
+amount_in: the amount the user has bet in the current hand as an int*)
 type player = {
     stake: int;
     mutable cards: card list;
     amount_in: int;
   }
 
+(* The amount of the big blind. Each round will initialize with the big blind
+* as 2. *)
 let big_blind = 2
 
+(* The amount of the little blind. Each round will initialize with the little
+* blind as 1. *)
 let little_blind =1
 
+(*The ID of a player - either "You" or "AI".*)
 type id = string
 
+(* The variant of player moves. Contains all possible moves in the game. Raise
+* is the only constructor that should have an int field because it is the only
+* time a player needs to specify how much money they want to raise by. *)
 type move = Call | Raise of int | Check | Fold | Deal
 
+(* Type game contains info on the game including fields for
+*flop: the current face-up cards as a card list
+*bet: the bet for the current hand as an int
+*pot: the total money that has been bet in the hand as an int
+*players: player queue for the hand; an association list of (id*player) pairs
+*deck: cards left to be dealt, of type deck
+*first_better: the player that starts the hand, a queue of player IDs
+*last_move: the last move made by either player *)
 type game= {
     flop: card list;
     bet: int;
@@ -31,8 +51,8 @@ type game= {
     last_move: move
   }
 
-(*[game_stage g] takes in a game [g] and returns a gamestage determined by how
-*many cards have are in [g.flop]*)
+(*Takes in a game [g] and returns a gamestage determined by how many cards are
+* in [g.flop]*)
 let game_stage g= match g.flop with
     |a::b::c::d::e::[]-> River
     |a::b::c::d::[]-> Turn
@@ -42,34 +62,33 @@ let game_stage g= match g.flop with
 (* Returns the record of the current player. *)
 let current_player (g:game) = snd (List.hd g.players)
 
+(* Returns the record of the second player in the player queue. *)
 let second_player (g:game) = snd (List.nth g.players 1)
 
 (* Returns the ID of the current player. *)
 let get_current_id (g:game) = fst (List.hd g.players)
 
+(* Returns the ID of the second player in the player queue. *)
 let get_second_id (g:game) = fst (List.nth g.players 1)
 
-let raise_false (l:(id*player) list)=
-    List.map (fun x-> ((fst x),(snd x))) l
-
-(* Adds 1 card to the flop. *)
+(* Adds 1 card to the flop for Turn and River game stages. *)
 let add1_flop (g:game) =
   let d1 = top_card g.deck in
   let old_flop = g.flop in
   let new_first = (if ((List.nth g.first_better 1) = get_current_id g)
-    then (List.rev (raise_false g.players))
-    else (raise_false g.players)) in
+    then (List.rev g.players)
+    else g.players) in
   {g with deck = snd d1;
 	  flop = old_flop@[fst d1];
 	  last_move = Deal;
 	  players= new_first}
 
-(* Adds 3 cards to the flop (for new hands). *)
+(* Adds 3 cards to the flop for Initial stage. *)
 let add3_flop (g:game) =
   let d1 = top3_cards g.deck in
   let new_first = (if ((List.nth g.first_better 1) =get_current_id g)
-    then (List.rev (raise_false g.players))
-    else (raise_false g.players)) in
+    then (List.rev g.players)
+    else g.players) in
   {g with deck = snd d1; flop = fst d1; players = new_first; last_move = Deal}
 
 
@@ -105,7 +124,7 @@ let is_valid_check (g:game) =
 (* Returns false if the current player is unable to raise the bet by i. *)
 let is_valid_raise (i:int) (g:game) =
   let last_raise= match g.last_move with
-    | Raise j -> j 
+    | Raise j -> j
     |_-> 0 in
   let difference = g.bet - (current_player g).amount_in in
   ((((difference + i) <= (current_player g).stake) || (i<0)) && i>=last_raise)
@@ -286,7 +305,7 @@ let winner (g:game) =
   if (compare_hands h1 h2) = h1 then (get_current_id g, h1)
   else (get_second_id g, h2)
 
-(* Returns a string of the best hand and the ID of the player that has it. *)
+(* Returns a string of the best hand and the ID of the player that has won. *)
 let winner_to_string (g: game) =
     "\n"^(fst (winner g)^" won with the hand: "^hand_to_string (snd (winner g)))
     ^"\n"
