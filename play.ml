@@ -28,6 +28,10 @@ let second_word command=
 			    ((String.length lower_trimmed)-space)in
   String.trim untrimmed
 
+(*[play_raise g second]  if the integer form of [second] is a valid raise
+*for the current player of [g], [play_raise g second] will raise by that 
+*int. If second is not a number or is not a valid raise, [play_raise g second]
+* will prompt the player for a new command and return [g]*)
 let play_raise g second= let num= int_of_string second in
 			     if (is_valid_raise num g)
 			     then turn (do_raise g num)
@@ -35,6 +39,8 @@ let play_raise g second= let num= int_of_string second in
 					   (print_string
 					      "\n\n\n Invalid input\n"; g)
 
+(*[check_no_snd g s f] will apply [f] to game [g] if [s] is empty and
+* prompt the user for a new command and return [g] otherwise*)
 let check_no_snd g s f= if s= "" then f g
 			else (print_string "\n\n\n Invalid input\n";g)
 
