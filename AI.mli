@@ -2,5 +2,6 @@ open Gamestate
 open Gamelogic
 open Card
 
-(* Takes in a game state, calculates a move, and returns the updated game state.*)
+(* Given a gamestate, calculates a move, prints the result and returns an
+ * updated gamestate *)
 val turn : Gamestate.game -> Gamestate.game

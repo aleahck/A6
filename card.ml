@@ -52,13 +52,15 @@ let card_of_string (s: string) : card =
                         else raise InvalidString )
   | _              -> raise InvalidString
 
-let suit_to_string (s: suit) = match s with
+let suit_to_string (s: suit) = 
+  match s with
   | Hearts   -> "Hearts"
   | Diamonds -> "Diamonds"
   | Clubs    -> "Clubs"
   | Spades   -> "Spades"
 
-let value_to_string (v: value) = match v with
+let value_to_string (v: value) =
+  match v with
   | Two   -> "2"
   | Three -> "3"
   | Four  -> "4"
@@ -80,6 +82,7 @@ let same_suit ((_,s1): card) ((_,s2): card) = s1 = s2
 
 let same_value ((v1,_): card) ((v2,_): card) = v1 = v2
 
+(* [value_above v] returns the value that is one step above [v] *)
 let value_above = function
   | Two   -> Three
   | Three -> Four
@@ -95,6 +98,7 @@ let value_above = function
   | King  -> Ace
   | Ace   -> Two
 
+(* [suit_above s] returns the suit that is one step above [s] *)
 let suit_above = function
   | Hearts   -> Diamonds
   | Diamonds -> Clubs
