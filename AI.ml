@@ -10,7 +10,8 @@ let call_amount g =
 (* [point_standard g] gives a point total that is a basic guideline
  *   for each stage of the hand. It returns the point total applying
  *   to the current gamestage for [g] *)
-let point_standard g = match game_stage g with
+let point_standard g = 
+  match game_stage g with
   | Initial -> 15.
   | Flop    -> 40.
   | Turn    -> 55.
@@ -23,7 +24,7 @@ let same_suit_bonus = function
   | h1::h2::[] -> if same_suit h1 h2 then 6. else 0.
   | _          -> 0.
 
-(* [check_within_5 c1 c2] returns true if c1 is within 5 cards of c2 *)
+(* [check_within_5 c1 c2] returns true if [c1] is within 5 cards of [c2] *)
 let check_within_5 c1 c2 =
   let rec helper a b i = if i = 0 then false
                          else if a = b then true
@@ -64,7 +65,8 @@ let rec cards_bonus = function
 (* [best_hand_bonus cs] returns a bonus amount of points based on the
  *   hand represented by [cs].
  * precondition: cs has a length of 5 or more *)
-let best_hand_bonus cards = match determine_best_hand cards with
+let best_hand_bonus cards = 
+  match determine_best_hand cards with
   | HighCard clist -> cards_bonus clist
   | Pair clist    -> 23. +. cards_bonus clist
   | TwoPair clist  -> 40. +. cards_bonus clist
