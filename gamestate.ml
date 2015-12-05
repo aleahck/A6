@@ -57,7 +57,7 @@ let raise_false (l:(id*player) list)=
 let add1_flop (g:game) =
   let d1 = top_card g.deck in
   let old_flop = g.flop in
-  let new_first = (if ((List.nth g.first_better 1) = fst (List.hd g.players))
+  let new_first = (if ((List.nth g.first_better 1) = get_current_id g)
     then (List.rev (raise_false g.players))
     else (raise_false g.players)) in
   {g with deck = snd d1;
@@ -68,7 +68,7 @@ let add1_flop (g:game) =
 (* Adds 3 cards to the flop (for new hands). *)
 let add3_flop (g:game) =
   let d1 = top3_cards g.deck in
-  let new_first = (if ((List.nth g.first_better 1) = fst (List.hd g.players))
+  let new_first = (if ((List.nth g.first_better 1) =get_current_id g)
     then (List.rev (raise_false g.players))
     else (raise_false g.players)) in
   {g with deck = snd d1; flop = fst d1; players = new_first; last_move = Deal}
@@ -115,8 +115,8 @@ let is_valid_raise (i:int) (g:game) =
 * stake, adds it to their amount in, changes the current_player to the next
 * player, and changes the last_move to Raise. *)
 let do_raise (g:game) (i:int)=
-  let num = if i > (snd (List.nth g.players 1)).stake then
-    (snd (List.nth g.players 1)).stake
+  let num = if i > (second_player g).stake then
+    (second_player g).stake
     else i
   in
   let new_player= do_player_raise g (current_player g) num in
@@ -151,12 +151,12 @@ let check (g:game) =
 let deal_two (g:game) =
   let d1 = top2_cards g.deck in
   let d2 = top2_cards (snd d1) in
-  let p1 = snd (List.hd g.players)  in
-  let p2 = snd (List.nth g.players 1) in
+  let p1 = current_player g   in
+  let p2 = second_player g in
   p1.cards <- fst (d1) ;
   p2.cards <- fst (d2) ;
   { g with
-    players = ([(fst(List.hd g.players),p1) ; (fst(List.nth g.players 1),p2)] );
+    players = ([((get_current_id g),p1) ; ((get_second_id g),p2)] );
     deck = snd d2;
     last_move= Deal
   }
@@ -174,12 +174,12 @@ let undelt pfield g =
 
 (* Helper for fold and dealer. Creates new hand on the turn a player folds. *)
 let new_hand (g:game) =
-  let fst_player1= snd (List.hd g.players) in
+  let fst_player1= current_player g in
   let fst_player=
     {fst_player1 with stake=fst_player1.stake; did_raise= false} in
-  let fst_id= fst (List.hd g.players) in
-  let snd_player1 = snd (List.nth g.players 1) in
-  let snd_id= fst (List.nth g.players 1) in
+  let fst_id= get_current_id g in
+  let snd_player1 = second_player g in
+  let snd_id=get_second_id g in
   let snd_player=
     {snd_player1 with stake = snd_player1.stake + g.pot; did_raise= false} in
   let new_start= List.hd g.first_better in
@@ -254,7 +254,7 @@ let fold (g:game) =
   else (if (current_player new_h).stake >=0 then
         (Printf.printf "\n%s won the game!\n" (get_current_id new_h); exit 0)
         else
-        (Printf.printf "\n%s won the game!\n" (fst (List.nth new_h.players 1)); exit 0))
+        (Printf.printf "\n%s won the game!\n" (get_second_id new_h); exit 0))
 
 
 (* Helper function for new_game. *)
@@ -281,12 +281,12 @@ let make_game () =
 (* Returns a pair of the ID of the player that won the round and the best
 * hand. Helper function for winner_to_string. *)
 let winner (g:game) =
-  let p1 = snd (List.hd g.players) in
+  let p1 = current_player g in
   let h1 = determine_best_hand (p1.cards@g.flop) in
-  let p2 = snd (List.nth g.players 1) in
+  let p2 = second_player g in
   let h2 = determine_best_hand (p2.cards@g.flop) in
-  if (compare_hands h1 h2) = h1 then (fst (List.hd g.players), h1)
-  else (fst (List.nth g.players 1), h2)
+  if (compare_hands h1 h2) = h1 then (get_current_id g, h1)
+  else (get_second_id g, h2)
 
 (* Returns a string of the best hand and the ID of the player that has it. *)
 let winner_to_string (g: game) =
