@@ -163,7 +163,6 @@ let check (g:game) =
   }
 
 
-
 (* Deals two cards to each player and returns the gamestate with the updated
 * deck and player records. *)
 let deal_two (g:game) =
