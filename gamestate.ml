@@ -163,7 +163,6 @@ let check (g:game) =
   }
 
 
-
 (* Deals two cards to each player and returns the gamestate with the updated
 * deck and player records. *)
 let deal_two (g:game) =
@@ -255,11 +254,12 @@ let player_to_string (g:game) (p:player) =
 let game_to_string (g:game) =
   let c_list_string = if (string_of_clist g.flop "") = "" then "None"
     else (string_of_clist g.flop "") in
+  let ai_rec = List.assoc "AI" g.players in
   "The board is: " ^ c_list_string ^ "\n" ^
   "The bet is: " ^ (string_of_int g.bet) ^ "\n" ^
   "The pot is: " ^ (string_of_int g.pot) ^ "\n\n" ^
-  (player_to_string g (List.assoc "You" g.players)) ^ "\n" ^
-  (player_to_string g (List.assoc "AI" g.players)) ^ "\n"
+  ("AI has stake: " ^ (string_of_int ai_rec.stake)) ^ "\n\n" ^
+  (player_to_string g (List.assoc "You" g.players))
 
 
 (* Only works for 2 players; only ends the hand instead of continuing hand

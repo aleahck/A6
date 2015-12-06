@@ -72,7 +72,8 @@ let rec choose_action (g:game)=
      | Check, "raise" -> ( let raised = try play_raise g second with
                                         | Failure "int_of_string" -> 
                                             ( print_invalid() ; g) in
-			                     choose_action raised )
+                           if raised.last_move = Deal then raised 
+                           else choose_action raised )
      | Check, "fold" -> check_no_snd g second fold 
      | Raise _, "raise" -> ( let raised = try play_raise g second with
                                           | Failure "int_of_string" ->
@@ -109,7 +110,7 @@ let rec choose_action (g:game)=
 *when someone wins or exits*)
 let rec play_game  (g: game)=
   match game_stage g with
-	| Initial -> ( print_string "\nIn INITIAL\n";print_string "\nNEW ROUND OF BETTING\n";
+	| Initial -> ( print_string "\nNEW ROUND OF BETTING\n";
                  let betting1 =
                    if get_current_id g = "You" then
                      let betting = choose_action g in
@@ -128,7 +129,7 @@ let rec play_game  (g: game)=
                        if betting2.last_move = Deal then betting2
                        else add3_flop betting2 in
                  play_game betting1 )
-  | Flop | Turn -> ( print_string "\nIn FLOP or TURN\n";print_string "\nNEW ROUND OF BETTING\n";
+  | Flop | Turn -> ( print_string "\nNEW ROUND OF BETTING\n";
                      let betting1 =
                        if get_current_id g = "You" then 
                          let betting = choose_action g in
@@ -145,8 +146,7 @@ let rec play_game  (g: game)=
                            if betting2.last_move = Deal then betting2
                            else add1_flop betting2 in
                      play_game betting1 )
-  | River -> (print_string "\n In RIVER\n";
-              print_string "\nNEW ROUND OF BETTING\n" ;
+  | River -> ( print_string "\nNEW ROUND OF BETTING\n" ;
                let betting1 = 
                  if get_current_id g = "You" then
                    choose_action g 
