@@ -91,8 +91,8 @@ let rec choose_action (g:game)=
      | Deal, "raise" -> ( let raised = try play_raise g second with
                                        | Failure "int_of_string" -> 
                                            (print_invalid() ; g) in
-                          if raised.last_move = Deal then raised
-                          else choose_action raised )
+                          if raised.last_move = Deal then (print_string "is deal";raised)
+                          else (print_string "is not deal";choose_action raised ))
      | Deal, "check" -> ( let f g = if is_valid_check g then 
                                       let checked = turn(check g) in
                                       if checked.last_move = Check then checked
